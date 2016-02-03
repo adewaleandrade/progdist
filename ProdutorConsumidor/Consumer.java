@@ -10,25 +10,26 @@
 public class Consumer extends Thread {
     
         Programa a;
-
-        public Consumer(Programa x) {
+	int id; 
+        public Consumer(Programa x, int id) {
 
                a = x;
+	       this.id = id;	
         }
 
         public void run() {
 
                try {
                    while (true) {
-                       a.consumerSemaphore.down();
-                       while (a.itemCount == 0)
+                       a.getConsumerSemaphore().down();
+                       while (a.getItemCount() == 0)
                            sleep(100);
                        int item;
-                       item = (Integer) a.buffer.get(0);
-                       a.buffer.remove(0);
-                       a.itemCount--;
-                       System.out.println("consumer: consuming item "+item);
-                       a.producerSemaphore.up();
+                       item = a.getBuffer().get(0);
+                       a.getBuffer().remove(0);
+                       a.decrementItemCount();
+                       System.out.println("consumer "+ this.id + ": consuming item "+item);
+                       a.getProducerSemaphore().up();
                        for (int i =0;i<10000;i++);
                    }
 
