@@ -1,0 +1,4 @@
+; dlltool --base-file C:\Users\allan\AppData\Local\Temp/cca07352.base --output-exp minhadll.exp --dllname minhadll.dll --output-def libminhadll.def --no-export-all-symbols --add-stdcall-alias --exclude-symbol=DllMainCRTStartup@12 --def C:\Users\allan\AppData\Local\Temp/cca07352.def --output-lib libminhadll.a
+EXPORTS
+	soma @ 1
+	HelloWorld @ 2
