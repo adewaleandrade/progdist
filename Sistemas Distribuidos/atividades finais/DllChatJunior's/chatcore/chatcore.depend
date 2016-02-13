@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1411102201 source:d:\users\pedro\desktop\dllchatjunior's\chatcore\chatcore.cpp
+	<stdio.h>
+	"chatcore.h"
+
+1411102648 d:\users\pedro\desktop\dllchatjunior's\chatcore\chatcore.h
+	<windows.h>
+

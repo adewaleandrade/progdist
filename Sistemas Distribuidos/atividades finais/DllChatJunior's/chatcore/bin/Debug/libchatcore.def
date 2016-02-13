@@ -1,0 +1,4 @@
+EXPORTS
+    DllMain@12 @1
+    Enviar @2
+    Receber @3

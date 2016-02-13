@@ -1,0 +1,6 @@
+Compile:
+1. javac *.java
+ 
+Execute:
+1. (at one host) java ServerMain
+2. (at another host) java ClientMain 

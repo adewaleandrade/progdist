@@ -1,0 +1,8 @@
+Compile:
+1. javac RmiServer.java
+2. rmic RmiServer
+3. javac RmiClient.java
+ 
+Execute:
+1. (at one host) java RmiServer
+2. (at another host) java RmiClient <server address> 3232 <message text>

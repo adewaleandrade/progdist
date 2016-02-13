@@ -3,6 +3,7 @@ package com.ps;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class MultiThreadPublisherSubscriberServer{
 
@@ -16,7 +17,7 @@ public class MultiThreadPublisherSubscriberServer{
 	// This chat server can accept up to 10 clients' connections
 
 	static  clientPublisherThread pt[] = new clientPublisherThread[10];           
-	Calculator calculator = new Calculator();
+	//Calculator calculator = new Calculator();
 	public static void main(String args[]) {
 
 		// The default port
@@ -63,7 +64,10 @@ public class MultiThreadPublisherSubscriberServer{
 				System.out.println(e);
 			}
 		}*/
+		publisherSocket = new Socket();
 		new clientPublisherThread(publisherSocket, serverSocket, pt).start();
+		
+		
 	}
 } 
 
@@ -76,49 +80,138 @@ class clientPublisherThread extends Thread{
 	Socket publisherSocket = null;
 	ServerSocket serverSocket = null;
 	clientPublisherThread pt[]; 
+	ArrayList<Topic> topics;
 
 	public clientPublisherThread(Socket publisherSocket,ServerSocket serverSocket, clientPublisherThread[] pt){
 		this.publisherSocket = publisherSocket;
 		this.serverSocket = serverSocket;
 		this.pt = pt;
+		topics = new ArrayList<Topic>();
 	}
 
 	public void run() {
+		String line;
+		
 		try{
-			//is = new DataInputStream(publisherSocket.getInputStream());
-			//os = new PrintStream(publisherSocket.getOutputStream());
+			
 
 			while (true) {
 				try {
 					publisherSocket = serverSocket.accept();
+					is = new DataInputStream(publisherSocket.getInputStream());
+					os = new PrintStream(publisherSocket.getOutputStream());
+					
 					for(int i=0; i<=9; i++){
 						if(pt[i] == null)
 						{
 							(pt[i] = new clientPublisherThread(publisherSocket,serverSocket,pt)).start();
+							System.out.println(pt[i].publisherSocket.getInetAddress());
+							publishTopicMessage(i);
 							break;
 						}
 					}
+					
 				}
 				catch (IOException e) {
 					System.out.println(e);
 				}
-				if(1 == 1) break;  
+				os.println("\nTo leave enter /quit in a new line");
+				line = is.readLine();
+				if(line.startsWith("/quit")) break;   
 			}
 
 			for(int i=0; i<=9; i++)
 				if (pt[i] == this) pt[i] = null;
 
-			//is.close();
-			//os.close();
+			is.close();
+			os.close();
 			publisherSocket.close();
 		} catch(IOException e){
-
+			System.out.println(e.getMessage());
 		}
 	}
+	public void publishTopicMessage(int index){
+		String line;
+        String operation;
+        
+        try {
+		    while (true) {
+				
+				os.println("Opcoes:");
+				os.println("1: Criar Topico"); 
+				os.println("2: Publicar mensagem"); 
+			    
+					operation = is.readLine();
+				
+	
+			    try {
+			    	switch(operation) {
+			    		case "1": createTopic(index); break;
+			    		case "2": publishMessage(); break;
+			    	}
+				    
+				} catch (Exception e) {
+					os.println("invalid parameter value."); 
+				} finally{
+					os.println("\nTo leave enter /quit in a new line");
+				    line = is.readLine();
+		            if(line.startsWith("/quit")) break;  
+				}
+				 
+			    
+		    }
+        } catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	
+	}
+	public void createTopic(int index){
+        String operation;
+        
+        try {
+				
+			os.println("Informe o nome do topico:");
+			operation = is.readLine();
+			Topic topic = new Topic();
+			topic.setTopic(operation);
+
+			os.println("Digite a mensagem para este topico:");
+			operation = is.readLine();
+			topic.insertMessage(operation, Integer.valueOf(index));
+			topics.add(topic);
+			
+				
+        } catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+	public void publishMessage(){
+		String operation;
+        String message;
+        try {
+				
+        	os.println("Topicos existentes:");
+			for (Topic topic : topics) {
+				os.println( topics.indexOf(topic) + ": " + topic.getTopic());
+			}
+			operation = is.readLine();
+			os.println("Digite a mensagem para este topico:");
+			message = is.readLine();
+			Integer topicIndex = Integer.parseInt(operation);
+			//int indexOf = topics.indexOf(topicIndex);
+			Topic aux = topics.get(topicIndex);
+			aux.insertMessage(message, topicIndex);
+			
+			aux.listAllMessages();
+			
+        } catch (IOException e1) {
+			e1.printStackTrace();
+		}
+	}
+
 }
-
-
-
 // This client thread opens the input and the output streams for a particular client,
 // ask the client's name, informs all the clients currently connected to the 
 // server about the fact that a new client has joined the chat room, 
@@ -126,131 +219,5 @@ class clientPublisherThread extends Thread{
 // When the client leaves the chat room this thread informs also all the
 // clients about that and terminates. 
 
-class clientCalculatorThread extends Thread{
-
-	DataInputStream is = null;
-	PrintStream os = null;
-	Socket clientSocket = null;       
-	clientCalculatorThread t[]; 
-	Calculator calculator;
-	ArrayList<Character> operatorList;
-
-	public clientCalculatorThread(Socket clientSocket, clientCalculatorThread[] t){
-		this.clientSocket=clientSocket;
-		this.t=t;
-		calculator = new Calculator();
-		createOperatorList();
-	}
-
-	public void run() 
-	{
-		String line;
-		String operation;
-		String a;
-		String b;
-		String result;
-		try{
-			is = new DataInputStream(clientSocket.getInputStream());
-			os = new PrintStream(clientSocket.getOutputStream());
-			os.println("Hello!\nTo leave enter /quit in a new line");
 
 
-			while (true) {
-				/*line = is.readLine();
-	        if(line.startsWith("/quit")){
-
-	         	break; 
-	     	}*/
-				os.println("Enter the operation you wanna do:");
-				os.println("(options: + - * /)"); 
-				operation = is.readLine();
-				if (validateOperator(operation.charAt(0))) {
-					try {
-						os.println("Enter the value of A:"); 
-						a = is.readLine(); 
-						os.println("Enter the value of B:"); 
-						b = is.readLine();
-						result = calculator.calculate(operation.charAt(0), Integer.valueOf(a), Integer.valueOf(b));
-						os.println("Result: "+ a + operation + b + " = " + result);
-					} catch (NumberFormatException e) {
-						os.println("invalid parameter value."); 
-					}
-				} else {
-					os.println("Invalid operator");
-				}
-
-				os.println("\nTo leave enter /quit in a new line");
-				line = is.readLine();
-				if(line.startsWith("/quit")) break;  
-			}
-
-			// be accepted by the server
-
-			for(int i=0; i<=9; i++)
-				if (t[i]==this) t[i]=null;  
-
-			// close the output stream
-			// close the input stream
-			// close the socket
-
-			is.close();
-			os.close();
-			clientSocket.close();
-		}
-		catch(IOException e){};
-	}
-
-	private boolean validateOperator(char operator){
-		return operatorList.contains(operator);
-	}
-	private void createOperatorList(){
-		operatorList = new ArrayList<Character>();
-		operatorList.add('+');
-		operatorList.add('-');
-		operatorList.add('*');
-		operatorList.add('/'); 
-	}
-}
-
-class Calculator {
-
-	public Integer sum(int a, int b){
-		return a + b;
-	}
-
-	public Integer subtraction(int a, int b){
-		return a - b;
-	}
-
-	public Integer multiply(int a, int b){
-		return a * b;
-	}
-
-	public Float division(int a, int b){
-		return ((float)a / b);
-	}
-
-	public String calculate(char op, int a, int b){
-
-		switch(op){
-		case '+' :
-			return sum(a, b).toString();
-			//break;
-
-		case '-' :
-			return subtraction(a, b).toString();
-			//break;
-
-		case '*' :
-			return multiply(a, b).toString();
-			//break;
-
-		case '/' :
-			return division(a, b).toString();
-			//break;
-		default :
-			return "Invalid operator";
-		}
-
-	}
-}
