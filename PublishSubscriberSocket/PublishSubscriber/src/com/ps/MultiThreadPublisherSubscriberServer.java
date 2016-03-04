@@ -3,71 +3,44 @@ package com.ps;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
-import java.util.Map;
 
 public class MultiThreadPublisherSubscriberServer{
 
 	// Declaration section:
 	// declare a server socket and a client socket for the server
-	// declare an input and an output stream
-
+	// declare an array of topics
+	// This chat server can accept up to 10 publisher clients' connections
+	
 	static  Socket publisherSocket = null;
 	static  ServerSocket serverSocket = null;
+    static ArrayList<Topic> topics;
+    static  clientPublisherThread pt[] = new clientPublisherThread[10];           
 
-	// This chat server can accept up to 10 clients' connections
-
-	static  clientPublisherThread pt[] = new clientPublisherThread[10];           
-	//Calculator calculator = new Calculator();
 	public static void main(String args[]) {
 
 		// The default port
-
 		int port_number=2222;
-
+		topics = new ArrayList<Topic>();
+		
 		if (args.length < 1)
 		{
 			System.out.println("Usage: java MultiThreadCalculatorServer \n"+
-					"Now using port number="+port_number);
+							   "Now using port number="+port_number);
 		} else {
 			port_number=Integer.valueOf(args[0]).intValue();
 		}
-
-		// Initialization section:
-		// Try to open a server socket on port port_number (default 2222)
-		// Note that we can't choose a port less than 1023 if we are not
-		// privileged users (root)
 
 		try {
 			serverSocket = new ServerSocket(port_number);
 		}
 		catch (IOException e)
-		{System.out.println(e);}
-
-		// Create a socket object from the ServerSocket to listen and accept 
-		// connections.
-		// Open input and output streams for this socket will be created in 
-		// client's thread since every client is served by the server in
-		// an individual thread
-
-		/*while(true){
-			try {
-				publisherSocket = serverSocket.accept();
-				for(int i=0; i<=9; i++){
-					if(t[i]==null)
-					{
-						(t[i] = new clientCalculatorThread(publisherSocket,t)).start();
-						break;
-					}
-				}
-			}
-			catch (IOException e) {
-				System.out.println(e);
-			}
-		}*/
+		{
+			System.out.println(e);
+		}
+		
 		publisherSocket = new Socket();
-		new clientPublisherThread(publisherSocket, serverSocket, pt).start();
-		
-		
+		new clientPublisherThread(publisherSocket, serverSocket, pt, topics).start();
+				
 	}
 } 
 
@@ -75,18 +48,19 @@ public class MultiThreadPublisherSubscriberServer{
 
 class clientPublisherThread extends Thread{
 
-	DataInputStream is = null;
+	//DataInputStream is = null;
+	BufferedReader is = null;
 	PrintStream os = null;
 	Socket publisherSocket = null;
 	ServerSocket serverSocket = null;
 	clientPublisherThread pt[]; 
 	ArrayList<Topic> topics;
 
-	public clientPublisherThread(Socket publisherSocket,ServerSocket serverSocket, clientPublisherThread[] pt){
+	public clientPublisherThread(Socket publisherSocket,ServerSocket serverSocket, clientPublisherThread[] pt, ArrayList<Topic> topics){
 		this.publisherSocket = publisherSocket;
 		this.serverSocket = serverSocket;
 		this.pt = pt;
-		topics = new ArrayList<Topic>();
+		this.topics = topics;
 	}
 
 	public void run() {
@@ -98,13 +72,14 @@ class clientPublisherThread extends Thread{
 			while (true) {
 				try {
 					publisherSocket = serverSocket.accept();
-					is = new DataInputStream(publisherSocket.getInputStream());
+					//is = new DataInputStream(publisherSocket.getInputStream());
+					is = new BufferedReader(new InputStreamReader(publisherSocket.getInputStream()));
 					os = new PrintStream(publisherSocket.getOutputStream());
 					
 					for(int i=0; i<=9; i++){
 						if(pt[i] == null)
 						{
-							(pt[i] = new clientPublisherThread(publisherSocket,serverSocket,pt)).start();
+							(pt[i] = new clientPublisherThread(publisherSocket,serverSocket,pt,topics)).start();
 							System.out.println(pt[i].publisherSocket.getInetAddress());
 							publishTopicMessage(i);
 							break;
@@ -161,8 +136,7 @@ class clientPublisherThread extends Thread{
 			    
 		    }
         } catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+        	System.out.println(e1);
 		}
 	
 	}
@@ -212,12 +186,7 @@ class clientPublisherThread extends Thread{
 	}
 
 }
-// This client thread opens the input and the output streams for a particular client,
-// ask the client's name, informs all the clients currently connected to the 
-// server about the fact that a new client has joined the chat room, 
-// and as long as it receive data, echos that data back to all other clients.
-// When the client leaves the chat room this thread informs also all the
-// clients about that and terminates. 
+
 
 
 
