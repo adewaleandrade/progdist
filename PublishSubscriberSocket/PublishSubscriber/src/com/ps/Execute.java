@@ -1,4 +1,4 @@
-package com.ps;
+package ps;
 
 public class Execute {
 

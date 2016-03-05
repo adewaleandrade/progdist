@@ -1,4 +1,4 @@
-package com.ps;
+package ps;
 
 import java.io.*;
 import java.net.*;
@@ -12,7 +12,6 @@ public class MultiThreadPublisherClient implements Runnable{
     
     static Socket clientSocket = null;
     static PrintStream os = null;
-    //static DataInputStream is = null;
     static BufferedReader is = null;
     static BufferedReader inputLine = null;
     static boolean closed = false;
@@ -39,7 +38,6 @@ public class MultiThreadPublisherClient implements Runnable{
             clientSocket = new Socket(host, port_number);
             inputLine = new BufferedReader(new InputStreamReader(System.in));
             os = new PrintStream(clientSocket.getOutputStream());
-            //is = new DataInputStream(clientSocket.getInputStream());
             is = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host "+host);
