@@ -22,18 +22,19 @@ public class MultiThreadSubscriberClient implements Runnable{
     public static void main(String[] args) {
 	
 	// The default port	
-	
-	int port_number=2222;
-        String host="localhost";
+	int port_number=2226;
+    String host="localhost";
+
+    int server_port_number = 2221;
 	
 	if (args.length < 2)
-	    {
-		System.out.println("Usage: java MultiThreadCalculatorClient  \n"+
-				   "Now using host="+host+", port_number="+port_number);
-	    } else {
+    {
+		System.out.println("Usage: java MultiThreadSubscriberClient  \n"+
+			   "Now using host="+host+", port_number="+port_number);
+    } else {
 		host=args[0];
 		port_number=Integer.valueOf(args[1]).intValue();
-	    }
+    }
 	// Initialization section:
 	// Try to open a socket on a given host and port
 	// Try to open input and output streams
@@ -43,14 +44,6 @@ public class MultiThreadSubscriberClient implements Runnable{
             os = new PrintStream(clientSocket.getOutputStream());
             //is = new DataInputStream(clientSocket.getInputStream());
             is = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            
-    		
-            //comunicação com o cliente Board
-    		serverSocket = new ServerSocket(port_number);			
-    		Socket serverClientSocket = serverSocket.accept();
-			//is = new DataInputStream(publisherSocket.getInputStream());
-			is_server = new BufferedReader(new InputStreamReader(serverClientSocket.getInputStream()));			    								   
-			System.out.println("Mensagem: " + is_server.readLine());
             
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host "+host);
@@ -64,22 +57,28 @@ public class MultiThreadSubscriberClient implements Runnable{
         if (clientSocket != null && os != null && is != null) {
             try {
 		
-		// Create a thread to read from the server
+            	// 	Create a thread to read from the server
 		
                 new Thread(new MultiThreadSubscriberClient()).start();
-		
-		while (!closed) {
+                //comunicação com o cliente Board
+        		serverSocket = new ServerSocket(server_port_number);			
+        		Socket serverClientSocket = serverSocket.accept();
+    			is_server = new BufferedReader(new InputStreamReader(serverClientSocket.getInputStream()));			    								   
+    			// System.out.println("Mensagem: " + is_server.readLine());
+    			while (!closed) {
                     os.println(inputLine.readLine()); 
                 }
 		
-		// Clean up:
-		// close the output stream
-		// close the input stream
-		// close the socket
-		
-		os.close();
-		is.close();
-		clientSocket.close();   
+				// Clean up:
+				// close the output stream
+				// close the input stream
+				// close the socket
+				
+				os.close();
+				is.close();
+				is_server.close();
+				clientSocket.close();
+				serverSocket.close();
             } catch (IOException e) {
                 System.err.println("IOException:  " + e);
             }
@@ -87,14 +86,22 @@ public class MultiThreadSubscriberClient implements Runnable{
     }           
     
     public void run() {		
-	String responseLine;
+	String clientLine = null;
+	String serverLine = null;
 	
 	// Keep on reading from the socket till we receive the "Bye" from the server,
 	// once we received that then we want to break.
 	try{ 
-	    while ((responseLine = is.readLine()) != null) {	    		    	    	
-			System.out.println(responseLine);
-			if (responseLine.indexOf("*** Bye") != -1) break;
+	    while ( ((clientLine = is.readLine()) != null) || ((serverLine = is_server.readLine()) != null)) {	    		    	    	
+			if (clientLine != null) {
+				System.out.println(clientLine);
+				if (clientLine.indexOf("*** Bye") != -1) break;	
+			}
+
+			if (serverLine != null) {
+				System.out.println("Nova mensagem recebida: ");
+				System.out.println(serverLine); 
+			}
 	    }
             closed = true;
 	} catch (IOException e) {

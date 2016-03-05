@@ -21,12 +21,12 @@ public class MultiThreadPublisherClient implements Runnable{
 	
 	// The default port	
 	
-	int port_number=2222;
-        String host="localhost";
+	int port_number=2225;
+    String host="localhost";
 	
 	if (args.length < 2)
 	    {
-		System.out.println("Usage: java MultiThreadCalculatorClient  \n"+
+		System.out.println("Usage: java MultiThreadPublisherClient  \n"+
 				   "Now using host="+host+", port_number="+port_number);
 	    } else {
 		host=args[0];

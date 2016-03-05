@@ -8,6 +8,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 public class MultiThreadPublisherSubscriberServer{
 
@@ -18,7 +19,8 @@ public class MultiThreadPublisherSubscriberServer{
 	
 	  Socket publisherSocket = null;
 	  Socket subscriberSocket = null;
-	  ServerSocket serverSocket = null;
+	  ServerSocket publisherServerSocket = null;
+	  ServerSocket subscriberServerSocket = null;
       ArrayList<Topic> topics;
       HashMap<Integer, ArrayList<ClientSubscriberThread>> subscriberList;
       ClientPublisherThread pt[] = new ClientPublisherThread[10];           
@@ -27,20 +29,23 @@ public class MultiThreadPublisherSubscriberServer{
 	public MultiThreadPublisherSubscriberServer(String args[]) {
 
 		// The default port
-		int port_number=2222;
+		int publsher_port_number=2225;
+		int subscriber_port_number=2226;
+		
 		topics = new ArrayList<Topic>();		
 		subscriberList = new HashMap<Integer, ArrayList<ClientSubscriberThread>>();
 		
 		if (args.length < 1)
 		{
-			System.out.println("Usage: java MultiThreadCalculatorServer \n"+
-							   "Now using port number="+port_number);
+			System.out.println("Usage: java MultiThreadPublisherSubscriberServer \n"+
+							   "Now using port number="+publsher_port_number);
 		} else {
-			port_number=Integer.valueOf(args[0]).intValue();
+			publsher_port_number=Integer.valueOf(args[0]).intValue();
 		}
 
 		try {
-			serverSocket = new ServerSocket(port_number);
+			publisherServerSocket = new ServerSocket(publsher_port_number);
+			subscriberServerSocket = new ServerSocket(subscriber_port_number);
 		}
 		catch (IOException e)
 		{
@@ -61,7 +66,8 @@ class ClientSubscriberThread extends Thread{
 	BufferedReader is = null;
 	PrintStream os = null;
 	Socket subscriberSocket = null;
-	ServerSocket serverSocket = null;
+	ServerSocket publisherServerSocket = null;
+	ServerSocket subscriberServerSocket = null;
 	ClientSubscriberThread st[]; 
 	ArrayList<Topic> topics;
 	HashMap<Integer, ArrayList<ClientSubscriberThread>> subscriberList;
@@ -69,7 +75,8 @@ class ClientSubscriberThread extends Thread{
 	
 	public ClientSubscriberThread(MultiThreadPublisherSubscriberServer server){
 		this.subscriberSocket = server.subscriberSocket;
-		this.serverSocket = server.serverSocket;
+		this.publisherServerSocket = server.publisherServerSocket;
+		this.subscriberServerSocket = server.subscriberServerSocket;
 		this.st = server.st;
 		this.topics = server.topics;
 		this.subscriberList = server.subscriberList;
@@ -80,11 +87,9 @@ class ClientSubscriberThread extends Thread{
 		String line;
 		
 		try{
-			
-
 			while (true) {
 				try {
-					subscriberSocket = serverSocket.accept();
+					subscriberSocket = subscriberServerSocket.accept();
 					//is = new DataInputStream(publisherSocket.getInputStream());
 					is = new BufferedReader(new InputStreamReader(subscriberSocket.getInputStream()));
 					os = new PrintStream(subscriberSocket.getOutputStream());
@@ -143,6 +148,17 @@ class ClientSubscriberThread extends Thread{
 				
 				subscribers.add(this);
 				subscriberList.put(topicIndex, subscribers);
+				
+				os.println("Inscrito na lista!");
+				os.println("Esperando publicacoes.");
+//				for (Entry<Integer, ArrayList<ClientSubscriberThread>> entry : subscriberList.entrySet())
+//				{
+//					for (ArrayList<ClientSubscriberThread> clientSubscriberThread : entry.getValue()) {
+//						entry.getKey() + "/" + entry.getValue()
+//					}
+//				}
+					
+				System.out.println();
 			}else{ 
 				//messagem qualquer... bla bla bla
 			}
@@ -165,7 +181,7 @@ class ClientPublisherThread extends Thread{
 
 	public ClientPublisherThread(MultiThreadPublisherSubscriberServer server){
 		this.publisherSocket = server.publisherSocket;
-		this.serverSocket = server.serverSocket;
+		this.serverSocket = server.publisherServerSocket;
 		this.pt = server.pt;
 		this.topics = server.topics;
 		this.server = server;
@@ -175,8 +191,6 @@ class ClientPublisherThread extends Thread{
 		String line;
 		
 		try{
-			
-
 			while (true) {
 				try {
 					publisherSocket = serverSocket.accept();
@@ -213,6 +227,7 @@ class ClientPublisherThread extends Thread{
 			System.out.println(e.getMessage());
 		}
 	}
+
 	public void publishTopicMessage(int index){
 		String line;
         String operation;
@@ -223,9 +238,8 @@ class ClientPublisherThread extends Thread{
 				os.println("Opcoes:");
 				os.println("1: Criar Topico"); 
 				os.println("2: Publicar mensagem"); 
-			    
-					operation = is.readLine();
-				
+
+				operation = is.readLine();
 	
 			    try {
 			    	switch(operation) {
@@ -240,8 +254,6 @@ class ClientPublisherThread extends Thread{
 				    line = is.readLine();
 		            if(line.startsWith("/quit")) break;  
 				}
-				 
-			    
 		    }
         } catch (IOException e1) {
         	System.out.println(e1);
@@ -269,11 +281,11 @@ class ClientPublisherThread extends Thread{
 			e1.printStackTrace();
 		}
 	}
+
 	public void publishMessage(){
 		String operation;
         String message;
         try {
-				
         	os.println("Topicos existentes:");
 			for (Topic topic : topics) {
 				os.println( topics.indexOf(topic) + ": " + topic.getTopic());
@@ -285,6 +297,7 @@ class ClientPublisherThread extends Thread{
 			//int indexOf = topics.indexOf(topicIndex);
 			Topic aux = topics.get(topicIndex);
 			aux.insertMessage(message, topicIndex);
+			
 			notifySubscribers(topicIndex);
 			
 			aux.listAllMessages();
@@ -294,26 +307,31 @@ class ClientPublisherThread extends Thread{
 		}
 	}
 	
-	public void notifySubscribers(int topicIndex){
+	public void notifySubscribers(Integer topicIndex){
 		ArrayList<ClientSubscriberThread> subscribers;	
 		subscribers = server.subscriberList.get(topicIndex);
 		
-		for (ClientSubscriberThread clientSubscriberThread : subscribers) {
-					
-			try {
-				Socket clientSocketSubscriber = new Socket(clientSubscriberThread.subscriberSocket.getInetAddress(), 
-																 clientSubscriberThread.subscriberSocket.getPort());
-								
-	            os = new PrintStream(clientSocketSubscriber.getOutputStream());
-	            os.println("New message number: " + topicIndex);
-	            
-	            os.close();
-	            clientSocketSubscriber.close();	            
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		if (subscribers != null){
+		
+			for (ClientSubscriberThread clientSubscriberThread : subscribers) {
+				try {
+					Socket clientSocketSubscriber = new Socket(clientSubscriberThread.subscriberSocket.getInetAddress(), 
+																	 clientSubscriberThread.subscriberSocket.getPort());
+									
+		            os = new PrintStream(clientSocketSubscriber.getOutputStream());
+		            os.println("New message number: " + topicIndex);
+		            
+		            os.close();
+		            clientSocketSubscriber.close();	            
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
-		}			
+		} else {
+			System.out.println("No subscribers.");
+		}
+						
 	}	
 
 }
