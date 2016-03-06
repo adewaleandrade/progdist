@@ -68,6 +68,9 @@ public class RmiPublisher
            e.printStackTrace();
        } 
     }
+	/*
+	 * Método para criação de tópicos
+	 */
     public static void createNewTopic(ReceiveMessageInterface rmiServer) {
        String topicName;
        String topicMessage;
@@ -80,16 +83,23 @@ public class RmiPublisher
 	 	   System.out.print("Digite a mensagem para este tópico: ");
 	 	   topicMessage = in.readLine();
 	 	   
+	 	   //instanciando um tópico novo 
 	 	   Topic newTopic = new Topic();
 	 	   newTopic.setTopic(topicName);
-	 	   newTopic.insertMessage(topicMessage, 1);	//setar endereço do cliente para indentifica-lo	   
+	 	   //inserindo mensagem para o tópico
+	 	   newTopic.insertMessage(topicMessage, 1);		   
 	 	   rmiServer.addTopic(newTopic);  
-	 	  
+	 	   
+	 	   //NOTIFICAR SUBSCRIBERS SE EXISTIR
+	 	   
        }catch(IOException e){
     	   e.printStackTrace();
        }
 	}
     
+    /*
+     * Publicar nova mensagem para o tópico
+     */
     public static void publishMessage(ReceiveMessageInterface rmiServer, String serverAddress, String serverPort) {
     	String message;
     	String idTopic;
@@ -104,11 +114,11 @@ public class RmiPublisher
 	 	  
 	 	   System.out.println("Digite a mensagem que deseja publicar: ");
 	       message = in.readLine();	
-	       //System.out.println("Enviando mensagem:  "+textTopic+" para o server "+serverAddress+":"+serverPort);
 	       
 	       rmiServer.addMessageTopic(message, idTopic);
 	       System.out.println("Mensagem adicionada com sucesso: ");
 	       
+	       //notificando subscribers inscritos neste tópico
 	       notifySubscribers(message, idTopic, rmiServer);
   	
     	}catch(IOException e){
@@ -116,25 +126,30 @@ public class RmiPublisher
     	}
 	}
     
+    /*
+     * Método para enviar notificação a todos os subscribers inscritos no tópico
+     */
     public static void notifySubscribers(String message, String idTopic, ReceiveMessageInterface rmiServer) {
 		// TODO Auto-generated method stub
 		try {		
-			rmiServer.notifyMessageToSubscribers(message, idTopic);
+			rmiServer.notifyMessageToSubscribers(message, Integer.parseInt(idTopic));
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
     
+    /*
+     * Método para listar todos os tópicos cadastrados
+     */
 	public static void listAllTopics(ReceiveMessageInterface rmiServer) {
         try{ 
      	   ArrayList<Topic> topicList = new ArrayList<Topic>();
  		   System.out.println("Tópicos cadastrados: \n");
  		   
  		   topicList = rmiServer.getTopics();  
- 		   for (Topic topic : topicList) {
- 			  System.out.println("ID   |   TOPICO ");
- 			  System.out.println(topic.getTopicId()+ " | " + topic.getTopic());
+ 		   for (Topic topic : topicList) { 			  
+ 			  System.out.println("ID: " + topic.getTopicId()+ " | " + topic.getTopic());
  		   }
         }catch(IOException e){
      	   e.printStackTrace();
