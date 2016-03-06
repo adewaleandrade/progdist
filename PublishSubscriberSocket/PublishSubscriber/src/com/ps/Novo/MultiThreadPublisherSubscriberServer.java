@@ -18,8 +18,6 @@ public class MultiThreadPublisherSubscriberServer{
 	// declare an array of topics
 	// This chat server can accept up to 10 publisher clients' connections
 	
-	  Socket publisherSocket = null;
-	  Socket subscriberSocket = null;
 	  ServerSocket publisherServerSocket = null;
 	  ServerSocket subscriberServerSocket = null;
       ArrayList<Topic> topics;
@@ -36,28 +34,26 @@ public class MultiThreadPublisherSubscriberServer{
 		this.topics = new ArrayList<Topic>();		
 		this.subscriberList = new HashMap<Integer, ArrayList<ClientSubscriberThread>>();
 		
-		if (args.length < 1)
+		if (args.length < 2)
 		{
 			System.out.println("Usage: java MultiThreadPublisherSubscriberServer \n"+
-							   "Now using port number="+publsher_port_number);
+							   "Now using port number="+publsher_port_number+ " for publishers and port number=" + subscriber_port_number + "for subscribers");
 		} else {
 			publsher_port_number=Integer.valueOf(args[0]).intValue();
+			subscriber_port_number=Integer.valueOf(args[1]).intValue();
 		}
 
 		try {
-			this.publisherServerSocket = new ServerSocket(publsher_port_number);
 			this.subscriberServerSocket = new ServerSocket(subscriber_port_number);
+			this.publisherServerSocket = new ServerSocket(publsher_port_number);
 		}
 		catch (IOException e)
 		{
 			System.out.println(e);
 		}
 		
-		this.publisherSocket = new Socket();
-		this.subscriberSocket = new Socket();
-		
-		new PublisherListnerThread(this).start();
-		new SubscriberListnerThread(this).start();
+		new Thread(new SubscriberListnerThread(this)).start();
+		new Thread(new PublisherListnerThread(this)).start();
 	}
 	
 	public int getTopicIndexByKey (int key) {
@@ -87,7 +83,7 @@ class SubscriberListnerThread extends Thread{
 		while (true) {
 			try {
 				Socket subscriberConnection = this.server.subscriberServerSocket.accept();
-				new ClientSubscriberThread(this.server, subscriberConnection).start();
+				new Thread(new ClientSubscriberThread(this.server, subscriberConnection)).start();
 			}
 			catch (IOException e) {
 				System.out.println(e);
@@ -146,11 +142,11 @@ class ClientSubscriberThread extends Thread{
 				os.println("Selecione o topico que deseja se inscrever: ");
 				
 				operator = is.readLine();
-				os.println("Linha lida!");
 				if (operator != null){
 					int topicIndex = board.getTopicIndexByKey(Integer.parseInt(operator));
 					if (topicIndex != -1) {
 						Topic topic = board.topics.get(topicIndex);
+						// *********** Resolver isso
 						topic.addSubscriber(subscriber.getInetAddress().toString(), subscriber.getPort());
 						os.println("Inscrito na lista!");
 						os.println("Esperando publicacoes.");
@@ -188,7 +184,7 @@ class PublisherListnerThread extends Thread{
 		while (true) {
 			try {
 				Socket publisherConnection = this.server.publisherServerSocket.accept();
-				new PublisherClientThread(this.server, publisherConnection).start();
+				new Thread(new PublisherClientThread(this.server, publisherConnection)).start();
 			}
 			catch (IOException e) {
 				System.out.println(e);
@@ -271,7 +267,6 @@ class PublisherClientThread extends Thread{
         try {
 			topicName = is.readLine();
         } catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
         

@@ -42,6 +42,8 @@ public class Topic {
 	}
 	
 	public void addSubscriber(String host, int port) {
+//		host = host.replace("/", "");
+//		host = host.replace("\\", "");
 		this.subscribers.add(new Subscriber(host, port));
 	}
 	
