@@ -70,6 +70,15 @@ public class RmiSubscriber extends java.rmi.server.UnicastRemoteObject implement
 	static public void main(String args[])
     {
        try{
+    	   
+    	   if(args.length >= 2){
+  		     serverAddress = args[0]; 
+  		     serverPort = args[1];    		   
+	  	    }else{
+	  		   System.out.println("É necessário informar o ip e porta do servidor!");
+	  		   System.out.println("Conectando com um servidor local...");
+	  	    }
+    	   
            // get the registry 
            registryServer = LocateRegistry.getRegistry(
 										               serverAddress,

@@ -50,6 +50,15 @@ public class RmiPublisher
 	static public void main(String args[])
     {
        try{
+    	   
+    	   if(args.length >= 2){
+    		     serverAddress = args[0]; 
+    		     serverPort = args[1];    		   
+    	   }else{
+    		   System.out.println("É necessário informar o ip e porta do servidor!");
+    		   System.out.println("Conectando com um servidor local...");
+    	   }
+    	   
            // get the registry 
            registry = LocateRegistry.getRegistry(
 								               serverAddress,
@@ -79,9 +88,9 @@ public class RmiPublisher
 		   //lendo mensagem do cliente
 		   BufferedReader in = new BufferedReader(new InputStreamReader(System.in)); 
 		   
-	 	   System.out.print("Informe o nome do tópico: ");
+	 	   System.out.println("Informe o nome do tópico: ");
 	 	   topicName = in.readLine();	
-	 	   System.out.print("Digite a mensagem para este tópico: ");
+	 	   System.out.println("Digite a mensagem para este tópico: ");
 	 	   topicMessage = in.readLine();
 	 	   
 	 	   //instanciando um tópico novo 
