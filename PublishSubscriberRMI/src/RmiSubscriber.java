@@ -31,7 +31,7 @@ public class RmiSubscriber extends java.rmi.server.UnicastRemoteObject implement
     static RmiSubscriber sub;
     
     /*
-     * Thread para que o usu·rio possa visualizar novos tÛpicos e ter possibilidade de inscrever-se
+     * Thread para que o usu√°rio possa visualizar novos t√≥picos e ter possibilidade de inscrever-se
      */
     private static Runnable threadSubscriber = new Runnable() {
         public void run() {
@@ -40,22 +40,23 @@ public class RmiSubscriber extends java.rmi.server.UnicastRemoteObject implement
     		
     		try{
     			BufferedReader in = new BufferedReader(new InputStreamReader(System.in)); 
+    			
     			while (true) {   
-    				   System.out.println("Procurando tÛpicos...");
-    		    	   if(checkTopicList(rmiServer)){
-    		    		   
+    				   System.out.println("Procurando t√≥picos...");
+    		    	   if(checkTopicList(rmiServer)){    		    		   
     		    		   listAllTopics(rmiServer);
-    	 		    	   System.out.println("Selecione um tÛpico informando o ID correspondente. ");
+    	 		    	   System.out.println("Selecione um t√≥pico informando o ID correspondente. ");
         			 	   idTopic = in.readLine();  
         			 	   
         			 	   if(idTopic.isEmpty()){
-         			 		  System.out.println("Para increver-se È necess·rio informar um ID v·lido. ");
+         			 		  System.out.println("Para increver-se √© necess√°rio informar um ID v√°lido. ");
          			 	   }else{   
          			 		   	menuAcoesSubscriber(idTopic);
          			 	   }        			 	   
     		    	   }else{
-    		    		   System.out.println("Nenhum tÛpico cadastrado.");
+    		    		   System.out.println("Nenhum t√≥pico cadastrado.");
     		    	   } 
+    		    	   
 	    		       System.out.println("\n Para continuar [Enter] / Para sair digite [quit]");
 	    			   line = in.readLine();
 	    			   if(line.startsWith("/quit")) break;   
@@ -69,17 +70,14 @@ public class RmiSubscriber extends java.rmi.server.UnicastRemoteObject implement
 	static public void main(String args[])
     {
        try{
-           // get the ìregistryî 
+           // get the registry 
            registryServer = LocateRegistry.getRegistry(
-               serverAddress,
-               (new Integer(serverPort)).intValue()
-           );   	     
-             
+										               serverAddress,
+										               (new Integer(serverPort)).intValue()
+        		   									  );   	                  
            // look up the remote object
-           rmiServer = (ReceiveMessageInterface)(registryServer.lookup("rmiServer"));   
-   			
-           sub = new RmiSubscriber();
-           
+           rmiServer = (ReceiveMessageInterface)(registryServer.lookup("rmiServer"));      			
+           sub = new RmiSubscriber();           
            new Thread(threadSubscriber).start();
        }
        catch(RemoteException e){
@@ -96,7 +94,7 @@ public class RmiSubscriber extends java.rmi.server.UnicastRemoteObject implement
 	  
 	  try{
 		  System.out.println("1: Para inscrever-se: ");
-		  System.out.println("2: Para cancelar inscriÁ„o: ");
+		  System.out.println("2: Para cancelar inscri√ß√£o: ");
 		  option = in.readLine();
 	
 		  switch (option) {
@@ -115,24 +113,25 @@ public class RmiSubscriber extends java.rmi.server.UnicastRemoteObject implement
 	}
 	
 	/*
-	 * MÈtodo para cancelar inscriÁ„o no tÛpico
+	 * M√©todo para cancelar inscri√ß√£o no t√≥pico
 	 */
 	public static void unSubscribeTopic(int idTopic) {
-		try {
+	   
+	  try {
 			rmiServer.unSubscribeTopic(sub, idTopic);
-		} catch (RemoteException e) {
+	  }catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+	  }
 	}
 	
 	/*
-	 * MÈtodo para inscrever cliente no tÛpico
+	 * M√©todo para inscrever cliente no t√≥pico
 	 */
 	public static void subscribeTopic(String idTopic, ReceiveMessageInterface rmiServer) {
 		try {
-			rmiServer.subscribeTopic(sub, Integer.parseInt(idTopic));
-			 System.out.println("Inscrito com sucesso! \nQuando novas mensagens forem cadastradas neste tÛpico vocÍ sera notificado! ");
+			 rmiServer.subscribeTopic(sub, Integer.parseInt(idTopic));
+			 System.out.println("Inscrito com sucesso! \nQuando novas mensagens forem cadastradas neste t√≥pico voc√™ sera notificado! ");
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -140,7 +139,7 @@ public class RmiSubscriber extends java.rmi.server.UnicastRemoteObject implement
 	}
 	
 	/*
-	 * MÈtodo para listar todos os tÛpicos
+	 * M√©todo para listar todos os t√≥picos
 	 */
     public static void listAllTopics(ReceiveMessageInterface rmiServer) {
         try{ 
@@ -157,7 +156,8 @@ public class RmiSubscriber extends java.rmi.server.UnicastRemoteObject implement
  	}
 
     public static boolean checkTopicList(ReceiveMessageInterface rmiServer){
-  	   ArrayList<Topic> topicList = new ArrayList<Topic>();  
+  	   ArrayList<Topic> topicList = new ArrayList<Topic>(); 
+  	   
 	    try {
 			topicList = rmiServer.getTopics();
 			if(topicList.isEmpty())
@@ -170,17 +170,14 @@ public class RmiSubscriber extends java.rmi.server.UnicastRemoteObject implement
     }
     
     /*
-     * MÈtodo para atualizar os subscribers com as mensagens de atualizaÁ„o
-     * ImplementaÁ„o da Interface ReceiveNotifyMessageInterface
+     * M√©todo para atualizar os subscribers com as mensagens de atualiza√ß√£o
+     * Implementa√ß√£o da Interface ReceiveNotifyMessageInterface
      * (non-Javadoc)
      * @see ReceiveNotifyMessageInterface#update(java.lang.String, java.lang.String)
      */
 	@Override
 	public void update(String message, String topicName) throws RemoteException {
 		// TODO Auto-generated method stub
-		System.out.println("Mensagem: "+message +" TÛpico: "+ topicName);
-		
-	}
-
-  
+		System.out.println("Mensagem: "+message +" t√≥pico: "+ topicName);		
+	} 
 }

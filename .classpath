@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="ProdutorConsumidor"/>
+	<classpathentry kind="src" path="PublishSubscriberRMI/src"/>
+	<classpathentry kind="src" path="PublishSubscriberSocket/PublishSubscriber/src"/>
+	<classpathentry kind="src" path="Sistemas Distribuidos/atividades finais/RMICalculadora"/>
+	<classpathentry kind="src" path="Sistemas Distribuidos/atividades finais/RMIChat"/>
+	<classpathentry kind="src" path="Sistemas Distribuidos/atividades finais/sockets"/>
+	<classpathentry kind="src" path="Sistemas Distribuidos/projeto final/replicatedDatabase/src"/>
+	<classpathentry kind="src" path="Sistemas Distribuidos/projeto final/Trabalho de SD/src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

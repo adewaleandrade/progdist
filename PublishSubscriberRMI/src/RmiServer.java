@@ -23,25 +23,8 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     
     static ArrayList<Topic> topics;
     static Topic topic;
-    static int topicId;   //XGH para geração de IDS para os tópicos :) ;) :D
-    
-    /*
-    private static Runnable threadUpdateSubscriber = new Runnable() {
-        public void run() {
-    		
-        	while (true) {
-        		
-        		  verifyMessageToSubscribers();
-        	      // colocando a Thread pra dormir 1 segundo.        
-        	      try {
-        	        Thread.sleep(1000);
-        	      }
-        	      catch (InterruptedException iex) { }
-        	    }			 		
-       }
-    };    
-    */
-    
+    static int topicId;   //XGH para geracao de IDS para os tÃ³picos :) ;) :D
+        
     static public void main(String args[])
     {
         try{
@@ -70,7 +53,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
             throw new RemoteException("can't get inet address.");
         }
        
-        thisPort = 3232;  // this port(registry’s port)
+        thisPort = 3232;  // this port(registrys port)
         System.out.println("this address="+thisAddress+",port="+thisPort);
         
         try{
@@ -89,14 +72,14 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
      */
     public void listAllTopics() {
     	if(topics.isEmpty()){
-    		System.out.println("Nenhum tópico cadastrado.");
+    		System.out.println("Nenhum tÃ³pico cadastrado.");
     	}else{
     		topic.listAllMessagesTopic();
     	}
 	}
     
     /*
-     * Método para adicionar um novo tópico na lista
+     * MÃ©todo para adicionar um novo tÃ³pico na lista
      * (non-Javadoc)
      * @see ReceiveMessageInterface#addTopic(Topic)
      */
@@ -107,7 +90,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
 	}   
     
     /*
-     * Método para adicionar noca mensagem ao tópico selecionado
+     * MÃ©todo para adicionar noca mensagem ao tÃ³pico selecionado
      * (non-Javadoc)
      * @see ReceiveMessageInterface#addMessageTopic(java.lang.String, java.lang.String)
      */
@@ -116,7 +99,7 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
 	}   
     
     /*
-     * Método para obter lista de tópicos
+     * MÃ©todo para obter lista de tÃ³picos
      * (non-Javadoc)
      * @see ReceiveMessageInterface#getTopics()
      */
@@ -125,14 +108,14 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     }
     
     /*
-     * Método para listar todas as mensagens cadastradas para o tópico
+     * MÃ©todo para listar todas as mensagens cadastradas para o tÃ³pico
      */
     public void getTopicMessages(int idTopic){
         try{  
   		    Map<String, Integer> messages = topics.get(idTopic).getAllMessagesTopic();
 
   			if(messages.isEmpty()){
-  				System.out.println("Nenhuma mensagem cadastrada para este tópico.");
+  				System.out.println("Nenhuma mensagem cadastrada para este tÃ³pico.");
   			}else{
   				for (Map.Entry<String, Integer> entry : messages.entrySet())			{
   				    System.out.println(entry.getKey() + "/" + entry.getValue());
@@ -144,12 +127,12 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
     }
     
     /*
-     * Método para inscrever um cliente ao tópico selecionado
+     * MÃ©todo para inscrever um cliente ao tÃ³pico selecionado
      * (non-Javadoc)
      * @see ReceiveMessageInterface#subscribeTopic(ReceiveNotifyMessageInterface, int)
      */
     public synchronized void subscribeTopic(ReceiveNotifyMessageInterface client, int idTopic) throws RemoteException {
-    	//inscrever somente se o cliente ainda não estiver inscrito no tópico 
+    	//inscrever somente se o cliente ainda nÃ£o estiver inscrito no tÃ³pico 
         if (!(topics.get(idTopic).getClients().contains(client))) {
         	topics.get(idTopic).addClient(client);
         	System.out.println("Novo subscriber inscrito! " + client);
@@ -157,32 +140,32 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
       }
     
     /*
-     * Método para remover inscrição do cliente ao tópico
+     * MÃ©todo para remover inscriÃ§Ã£o do cliente ao tÃ³pico
      * (non-Javadoc)
      * @see ReceiveMessageInterface#unSubscribeTopic(ReceiveNotifyMessageInterface, int)
      */
 	public synchronized void unSubscribeTopic(ReceiveNotifyMessageInterface client, int idTopic) throws RemoteException {
 		if ((topics.get(idTopic).getClients().contains(client))) {
 			if (topics.get(idTopic).removeClient(client)) {
-		    	System.out.println("Cliente " + client + " removido do tópico " + topics.get(idTopic).getTopic());
-		    	client.update("Incrição cancelada com sucesso do tópico: ", "" + topics.get(idTopic).getTopic());
+		    	System.out.println("Cliente " + client + " removido do tÃ³pico " + topics.get(idTopic).getTopic());
+		    	client.update("InscriÃ§Ã£o cancelada com sucesso do tÃ³pico: ", "" + topics.get(idTopic).getTopic());
 		    } else {
-	    		System.out.println("Cliente deconhecido: " + client + " não foi registrado.");
+	    		System.out.println("Cliente deconhecido: " + client + " nÃ£o foi registrado.");
 		    }
 		}else{
-        	//enviando nova mensagem para o cliente
-        	client.update("Desculpe! Você não está inscrito neste tópico. ", "" + topics.get(idTopic).getTopic());
+        	  //enviando nova mensagem para o cliente
+        	  client.update("Desculpe! VocÃª nÃ£o estÃ¡ inscrito neste tÃ³pico. ", "" + topics.get(idTopic).getTopic());
 		}
 	}    
     
 	/*
-	 * Método para notificar os clientes inscritos no tópico
+	 * MÃ©todo para notificar os clientes inscritos no tÃ³pico
 	 * (non-Javadoc)
 	 * @see ReceiveMessageInterface#notifyMessageToSubscribers(java.lang.String, int)
 	 */
     public void notifyMessageToSubscribers(String newMessage, int idTopic){
 	        
-        //percoreendo lista de clientes para envio de atulizações
+        //percoreendo lista de clientes para envio de atulizacoes
         for (Enumeration e = topics.get(idTopic).getElements() ; e.hasMoreElements() ;) {
         	ReceiveNotifyMessageInterface client = (ReceiveNotifyMessageInterface) e.nextElement();
 	        try {
@@ -190,8 +173,8 @@ public class RmiServer extends java.rmi.server.UnicastRemoteObject implements Re
 	        	client.update(newMessage, "" + topics.get(idTopic).getTopic());
 	        }
 	        catch (RemoteException ex) {
-	           //caso a comunicação falhe cliente é removido da lista
-	           System.out.println("Comunicação com o cliente " + client + " falhou.");
+	           //caso a comunicacao falhe cliente e removido da lista
+	           System.out.println("ComunicaÃ§Ã£o com o cliente " + client + " falhou.");
 		       try {
 					unSubscribeTopic(client, idTopic);
 			    } catch (RemoteException e1) {

@@ -16,7 +16,7 @@ public class RmiPublisher
     static String serverPort = "3232";
     
     private static Runnable threadPublisher = new Runnable() {
-        public void run() {
+        public void run() {        	
     		String line;
  			 		
     		try{
@@ -25,7 +25,7 @@ public class RmiPublisher
     		           String option;    		          
     		    	   BufferedReader in = new BufferedReader(new InputStreamReader(System.in));           
     		           
-    		    	   System.out.print("0: Para criar novo tÛpico:\n1: Publicar mensagem");
+    		    	   System.out.print("0: Para criar novo t√≥pico:\n1: Publicar mensagem");
     		    	   option = in.readLine();    	   
     		    	   
     		           switch (option) {
@@ -50,7 +50,7 @@ public class RmiPublisher
 	static public void main(String args[])
     {
        try{
-           // get the ìregistryî 
+           // get the registry 
            registry = LocateRegistry.getRegistry(
 								               serverAddress,
 								               (new Integer(serverPort)).intValue());   	             
@@ -68,8 +68,9 @@ public class RmiPublisher
            e.printStackTrace();
        } 
     }
+	
 	/*
-	 * MÈtodo para criaÁ„o de tÛpicos
+	 * M√©todo para cria√ß√£o de t√≥picos
 	 */
     public static void createNewTopic(ReceiveMessageInterface rmiServer) {
        String topicName;
@@ -78,19 +79,17 @@ public class RmiPublisher
 		   //lendo mensagem do cliente
 		   BufferedReader in = new BufferedReader(new InputStreamReader(System.in)); 
 		   
-	 	   System.out.print("Informe o nome do tÛpico: ");
+	 	   System.out.print("Informe o nome do t√≥pico: ");
 	 	   topicName = in.readLine();	
-	 	   System.out.print("Digite a mensagem para este tÛpico: ");
+	 	   System.out.print("Digite a mensagem para este t√≥pico: ");
 	 	   topicMessage = in.readLine();
 	 	   
-	 	   //instanciando um tÛpico novo 
+	 	   //instanciando um t√≥pico novo 
 	 	   Topic newTopic = new Topic();
 	 	   newTopic.setTopic(topicName);
-	 	   //inserindo mensagem para o tÛpico
+	 	   //inserindo mensagem para o t√≥pico
 	 	   newTopic.insertMessage(topicMessage, 1);		   
-	 	   rmiServer.addTopic(newTopic);  
-	 	   
-	 	   //NOTIFICAR SUBSCRIBERS SE EXISTIR
+	 	   rmiServer.addTopic(newTopic);  	 	   	 	  
 	 	   
        }catch(IOException e){
     	   e.printStackTrace();
@@ -98,18 +97,19 @@ public class RmiPublisher
 	}
     
     /*
-     * Publicar nova mensagem para o tÛpico
+     * Publicar nova mensagem para o t√≥pico
      */
     public static void publishMessage(ReceiveMessageInterface rmiServer, String serverAddress, String serverPort) {
     	String message;
     	String idTopic;
+    	
     	try{
  		   //lendo mensagem do cliente
  		   BufferedReader in = new BufferedReader(new InputStreamReader(System.in)); 
  		   
 	 	   //listando todos os topicos
 	 	   listAllTopics(rmiServer);
-	 	   System.out.println("Selecione o tÛpico: ");
+	 	   System.out.println("Selecione o t√≥pico: ");
 	 	   idTopic = in.readLine();
 	 	  
 	 	   System.out.println("Digite a mensagem que deseja publicar: ");
@@ -118,7 +118,7 @@ public class RmiPublisher
 	       rmiServer.addMessageTopic(message, idTopic);
 	       System.out.println("Mensagem adicionada com sucesso: ");
 	       
-	       //notificando subscribers inscritos neste tÛpico
+	       //notificando subscribers inscritos neste t√≥pico
 	       notifySubscribers(message, idTopic, rmiServer);
   	
     	}catch(IOException e){
@@ -127,7 +127,7 @@ public class RmiPublisher
 	}
     
     /*
-     * MÈtodo para enviar notificaÁ„o a todos os subscribers inscritos no tÛpico
+     * M√©todo para enviar notifica√ß√£o a todos os subscribers inscritos no t√≥pico
      */
     public static void notifySubscribers(String message, String idTopic, ReceiveMessageInterface rmiServer) {
 		// TODO Auto-generated method stub
@@ -140,12 +140,12 @@ public class RmiPublisher
 	}
     
     /*
-     * MÈtodo para listar todos os tÛpicos cadastrados
+     * M√©todo para listar todos os t√≥picos cadastrados
      */
 	public static void listAllTopics(ReceiveMessageInterface rmiServer) {
         try{ 
      	   ArrayList<Topic> topicList = new ArrayList<Topic>();
- 		   System.out.println("TÛpicos cadastrados: \n");
+ 		   System.out.println("t√≥picos cadastrados: \n");
  		   
  		   topicList = rmiServer.getTopics();  
  		   for (Topic topic : topicList) { 			  
