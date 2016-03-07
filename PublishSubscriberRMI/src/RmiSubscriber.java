@@ -25,8 +25,8 @@ public class RmiSubscriber extends java.rmi.server.UnicastRemoteObject implement
 	
     static ReceiveMessageInterface rmiServer;
     static Registry registryServer;
-    static String serverAddress = "localhost"; 
-    static String serverPort = "3232";
+    static String serverAddress = ""; 
+    static String serverPort = "";
     
     static RmiSubscriber sub;
     
@@ -75,8 +75,8 @@ public class RmiSubscriber extends java.rmi.server.UnicastRemoteObject implement
   		     serverAddress = args[0]; 
   		     serverPort = args[1];    		   
 	  	    }else{
-	  		   System.out.println("É necessário informar o ip e porta do servidor!");
-	  		   System.out.println("Conectando com um servidor local...");
+	  		   System.out.println("É necessário informar o ip e porta do servidor!");	  		   
+	  		   System.exit(0);
 	  	    }
     	   
            // get the registry 

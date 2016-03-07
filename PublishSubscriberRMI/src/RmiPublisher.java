@@ -56,7 +56,7 @@ public class RmiPublisher
     		     serverPort = args[1];    		   
     	   }else{
     		   System.out.println("É necessário informar o ip e porta do servidor!");
-    		   System.out.println("Conectando com um servidor local...");
+	  		   System.exit(0);
     	   }
     	   
            // get the registry 
