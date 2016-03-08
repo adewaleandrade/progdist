@@ -8,7 +8,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map.Entry;
+
+import com.ps.Topic;
 
 public class MultiThreadPublisherSubscriberServer{
 
@@ -17,14 +18,10 @@ public class MultiThreadPublisherSubscriberServer{
 	// declare an array of topics
 	// This chat server can accept up to 10 publisher clients' connections
 	
-	  Socket publisherSocket = null;
-	  Socket subscriberSocket = null;
 	  ServerSocket publisherServerSocket = null;
 	  ServerSocket subscriberServerSocket = null;
       ArrayList<Topic> topics;
       HashMap<Integer, ArrayList<ClientSubscriberThread>> subscriberList;
-      ClientPublisherThread pt[] = new ClientPublisherThread[10];           
-      ClientSubscriberThread st[] = new ClientSubscriberThread[10]; 
     
 	public MultiThreadPublisherSubscriberServer(String args[]) {
 
@@ -32,159 +29,180 @@ public class MultiThreadPublisherSubscriberServer{
 		int publsher_port_number=2225;
 		int subscriber_port_number=2226;
 		
-		topics = new ArrayList<Topic>();		
-		subscriberList = new HashMap<Integer, ArrayList<ClientSubscriberThread>>();
+		this.topics = new ArrayList<Topic>();		
+		this.subscriberList = new HashMap<Integer, ArrayList<ClientSubscriberThread>>();
 		
-		if (args.length < 1)
+		if (args.length < 2)
 		{
 			System.out.println("Usage: java MultiThreadPublisherSubscriberServer \n"+
-							   "Now using port number="+publsher_port_number);
+							   "Now using port number="+publsher_port_number+ " for publishers and port number=" + subscriber_port_number + "for subscribers");
 		} else {
 			publsher_port_number=Integer.valueOf(args[0]).intValue();
+			subscriber_port_number=Integer.valueOf(args[1]).intValue();
 		}
 
 		try {
-			publisherServerSocket = new ServerSocket(publsher_port_number);
-			subscriberServerSocket = new ServerSocket(subscriber_port_number);
+			this.subscriberServerSocket = new ServerSocket(subscriber_port_number);
+			this.publisherServerSocket = new ServerSocket(publsher_port_number);
 		}
 		catch (IOException e)
 		{
 			System.out.println(e);
 		}
 		
-		publisherSocket = new Socket();
-		new ClientPublisherThread(this).start();
+		new Thread(new SubscriberListnerThread(this)).start();
+		new Thread(new PublisherListnerThread(this)).start();
+	}
+	
+	public int getTopicIndexByKey (int key) {
+		for (Topic topic : topics) {
+			if (topic.key == key) {
+				return topics.indexOf(topic);
+			}
+		}
 		
-		subscriberSocket = new Socket();
-		new ClientSubscriberThread(this).start();
-					
-				
+		return -1;
 	}
 } 
 
-class ClientSubscriberThread extends Thread{
-	BufferedReader is = null;
-	PrintStream os = null;
-	Socket subscriberSocket = null;
-	ServerSocket publisherServerSocket = null;
-	ServerSocket subscriberServerSocket = null;
-	ClientSubscriberThread st[]; 
-	ArrayList<Topic> topics;
-	HashMap<Integer, ArrayList<ClientSubscriberThread>> subscriberList;
+/**
+ * Classe responsável pela captação de novas conexções com subscribers
+ * Após uma nova conexão, uma nova thread de tratamento de subscribers é gerada. 
+ * 
+ * @author adewale
+ */
+class SubscriberListnerThread extends Thread{
 	MultiThreadPublisherSubscriberServer server = null;
-	
-	public ClientSubscriberThread(MultiThreadPublisherSubscriberServer server){
-		this.subscriberSocket = server.subscriberSocket;
-		this.publisherServerSocket = server.publisherServerSocket;
-		this.subscriberServerSocket = server.subscriberServerSocket;
-		this.st = server.st;
-		this.topics = server.topics;
-		this.subscriberList = server.subscriberList;
+	public SubscriberListnerThread(MultiThreadPublisherSubscriberServer server){
 		this.server = server;
 	}
 	
 	public void run() {
-		String line;
-		
-		try{
-			while (true) {
-				try {
-					subscriberSocket = subscriberServerSocket.accept();
-					//is = new DataInputStream(publisherSocket.getInputStream());
-					is = new BufferedReader(new InputStreamReader(subscriberSocket.getInputStream()));
-					os = new PrintStream(subscriberSocket.getOutputStream());
-					
-					for(int i=0; i<=9; i++){
-						if(st[i] == null)
-						{
-							(st[i] = new ClientSubscriberThread(server)).start();
-							System.out.println(st[i].subscriberSocket.getInetAddress());
-							showTopics();
-							break;
-						}
-					}
-					
-				}
-				catch (IOException e) {
-					System.out.println(e);
-				}
-				os.println("\nTo leave enter /quit in a new line");
-				line = is.readLine();
-				if(line.startsWith("/quit")) break;   
+		while (true) {
+			try {
+				Socket subscriberConnection = this.server.subscriberServerSocket.accept();
+				new Thread(new ClientSubscriberThread(this.server, subscriberConnection)).start();
 			}
-
-			for(int i=0; i<=9; i++)
-				if (st[i] == this) st[i] = null;
-
-			is.close();
-			os.close();
-			subscriberSocket.close();
-		} catch(IOException e){
-			System.out.println(e.getMessage());
-		}
-	}
-	public void showTopics(){
-		        
-        try {
-        	String index;
-        	os.println("Topicos existentes:");
-			for (Topic topic : topics) {
-				os.println( topics.indexOf(topic) + ": " + topic.getTopic());
+			catch (IOException e) {
+				System.out.println(e);
 			}
-			
-			os.println("Selecione o topico que deseja se inscrever:");
-			index = is.readLine();
-			Integer topicIndex = Integer.parseInt(index);
-			//int indexOf = topics.indexOf(topicIndex);
-			
-			ArrayList<ClientSubscriberThread> subscribers;		
-			
-			if (subscriberList != null){
-				if (subscriberList.isEmpty()){					
-					subscribers = new ArrayList<ClientSubscriberThread>();
-				} else {
-					subscribers = subscriberList.get(topicIndex);
-				}
-				
-				subscribers.add(this);
-				subscriberList.put(topicIndex, subscribers);
-				
-				os.println("Inscrito na lista!");
-				os.println("Esperando publicacoes.");
-//				for (Entry<Integer, ArrayList<ClientSubscriberThread>> entry : subscriberList.entrySet())
-//				{
-//					for (ArrayList<ClientSubscriberThread> clientSubscriberThread : entry.getValue()) {
-//						entry.getKey() + "/" + entry.getValue()
-//					}
-//				}
-					
-				System.out.println();
-			}else{ 
-				//messagem qualquer... bla bla bla
-			}
-        } catch (IOException e1) {
-			e1.printStackTrace();
 		}
 	}
 }
 
-class ClientPublisherThread extends Thread{
-
-	//DataInputStream is = null;
+/**
+ * This class handles the subscriber requests implementing a Socket server
+ * @author adewale
+ */
+class ClientSubscriberThread extends Thread{
+	MultiThreadPublisherSubscriberServer board = null;
+	Socket subscriber = null;
 	BufferedReader is = null;
 	PrintStream os = null;
-	Socket publisherSocket = null;
-	ServerSocket serverSocket = null;
-	ClientPublisherThread pt[]; 
-	ArrayList<Topic> topics;
-	MultiThreadPublisherSubscriberServer server = null;
+	
+	public ClientSubscriberThread(MultiThreadPublisherSubscriberServer board, Socket subscriber){
+		this.board = board;
+		this.subscriber = subscriber;
+	}
+	
+	public void run() {
+		String line;
+		try{
+			while (true) {
+				is = new BufferedReader(new InputStreamReader(this.subscriber.getInputStream()));;
+				os = new PrintStream(this.subscriber.getOutputStream());
+				showTopics();
+				os.println("\nTo leave enter /quit in a new line");
+				line = is.readLine();
+				if(line.startsWith("/quit")) break; 
+			}
 
-	public ClientPublisherThread(MultiThreadPublisherSubscriberServer server){
-		this.publisherSocket = server.publisherSocket;
-		this.serverSocket = server.publisherServerSocket;
-		this.pt = server.pt;
-		this.topics = server.topics;
+			is.close();
+			os.close();
+			this.subscriber.close();
+		} catch(IOException e){
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	
+	// refatorar
+	public void showTopics(){
+		String line;
+        String operator;
+   
+		try {
+		    while (true) {
+		    	os.println("Topicos cadastrados:");
+				for (Topic topic : board.topics) {
+					os.println( topic.key + " -> " + topic.getName());
+				}
+				os.println("Selecione o topico que deseja se inscrever: ");
+				
+				operator = is.readLine();
+				if (operator != null && !operator.equals("")){
+					int topicIndex = board.getTopicIndexByKey(Integer.parseInt(operator));
+					if (topicIndex != -1) {
+						os.println("Informe a porta para a conexão: ");
+						operator = is.readLine();
+						
+						Topic topic = board.topics.get(topicIndex);
+		
+						topic.addSubscriber(subscriber.getInetAddress().toString(), Integer.parseInt(operator));
+						os.println("Inscrito na lista!");
+						os.println("Esperando publicacoes.");
+					}
+				}
+								    
+				os.println("\nTo leave enter /quit in a new line");
+			    line = is.readLine();
+			    if (line == null){
+			    	os.println("Null line");
+			    } else {
+			    	if(line.startsWith("/quit")) break;
+			    }
+		    }
+        } catch (IOException e1) {
+        	System.out.println(e1);
+		}	
+	}
+}
+
+
+/**
+ * Classe responsável pela captação de novas conexções com subscribers
+ * Após uma nova conexão, uma nova thread de tratamento de subscribers é gerada. 
+ * 
+ * @author adewale
+ */
+class PublisherListnerThread extends Thread{
+	MultiThreadPublisherSubscriberServer server = null;
+	public PublisherListnerThread(MultiThreadPublisherSubscriberServer server){
 		this.server = server;
+	}
+	
+	public void run() {
+		while (true) {
+			try {
+				Socket publisherConnection = this.server.publisherServerSocket.accept();
+				new Thread(new PublisherClientThread(this.server, publisherConnection)).start();
+			}
+			catch (IOException e) {
+				System.out.println(e);
+			}
+		}
+	}
+}
+class PublisherClientThread extends Thread{
+	
+	MultiThreadPublisherSubscriberServer board = null;
+	Socket publisherConnection = null;
+	BufferedReader is = null;
+	PrintStream os = null;
+
+	public PublisherClientThread(MultiThreadPublisherSubscriberServer server, Socket connection){
+		this.publisherConnection = connection;
+		this.board = server;
 	}
 
 	public void run() {
@@ -192,43 +210,26 @@ class ClientPublisherThread extends Thread{
 		
 		try{
 			while (true) {
-				try {
-					publisherSocket = serverSocket.accept();
-					//is = new DataInputStream(publisherSocket.getInputStream());
-					is = new BufferedReader(new InputStreamReader(publisherSocket.getInputStream()));
-					os = new PrintStream(publisherSocket.getOutputStream());
-					
-					for(int i=0; i<=9; i++){
-						if(pt[i] == null)
-						{
-							(pt[i] = new ClientPublisherThread(server)).start();
-							System.out.println(pt[i].publisherSocket.getInetAddress());
-							publishTopicMessage(i);
-							break;
-						}
-					}
-					
-				}
-				catch (IOException e) {
-					System.out.println(e);
-				}
+				is = new BufferedReader(new InputStreamReader(publisherConnection.getInputStream()));
+				os = new PrintStream(publisherConnection.getOutputStream());
+				
+				System.out.println(publisherConnection.getInetAddress());
+//				publishTopicMessage(i);
+				publisherMenu(publisherConnection);
 				os.println("\nTo leave enter /quit in a new line");
 				line = is.readLine();
 				if(line.startsWith("/quit")) break;   
 			}
 
-			for(int i=0; i<=9; i++)
-				if (pt[i] == this) pt[i] = null;
-
 			is.close();
 			os.close();
-			publisherSocket.close();
+			publisherConnection.close();
 		} catch(IOException e){
 			System.out.println(e.getMessage());
 		}
 	}
 
-	public void publishTopicMessage(int index){
+	public void publisherMenu(Socket publisherConnection){
 		String line;
         String operation;
         
@@ -240,99 +241,76 @@ class ClientPublisherThread extends Thread{
 				os.println("2: Publicar mensagem"); 
 
 				operation = is.readLine();
-	
-			    try {
-			    	switch(operation) {
-			    		case "1": createTopic(index); break;
-			    		case "2": publishMessage(); break;
-			    	}
-				    
-				} catch (Exception e) {
-					os.println("invalid parameter value."); 
-				} finally{
-					os.println("\nTo leave enter /quit in a new line");
-				    line = is.readLine();
-		            if(line.startsWith("/quit")) break;  
-				}
+				switch(operation) {
+		    		case "1": createTopic(); break;
+		    		case "2": publishMessage(publisherConnection); break;
+		    	}
+			    
+				os.println("\nTo leave enter /quit in a new line");
+			    line = is.readLine();
+	            if(line.startsWith("/quit")) break;  
 		    }
         } catch (IOException e1) {
         	System.out.println(e1);
 		}
 	
 	}
-	public void createTopic(int index){
-        String operation;
+	
+	/**
+	 * Cira um novo tópico registrável.
+	 * @param publisherConnection
+	 */
+	public void createTopic(){
+        String topicName = null;
+        
+        os.println("Informe o nome do topico:");
         
         try {
-				
-			os.println("Informe o nome do topico:");
-			operation = is.readLine();
-			Topic topic = new Topic();
-			topic.setTopic(operation);
-
-			os.println("Digite a mensagem para este topico:");
-			operation = is.readLine();
-			topic.insertMessage(operation, Integer.valueOf(index));
-			topics.add(topic);
-			
-				
+			topicName = is.readLine();
         } catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+        
+        if (topicName == null) {
+        	os.println("Topico invalido!");
+        	return;
+        }
+        
+        Topic topic = new Topic(topicName, board.topics.size());
+		this.board.topics.add(topic);
+		os.println("Topico adicionado com sucesso!");
 	}
-
-	public void publishMessage(){
+	
+	
+	public void publishMessage(Socket publisherConnection){
 		String operation;
         String message;
         try {
         	os.println("Topicos existentes:");
-			for (Topic topic : topics) {
-				os.println( topics.indexOf(topic) + ": " + topic.getTopic());
+			for (Topic topic : this.board.topics) {
+				os.println( topic.key + "-> " + topic.getName());
 			}
 			operation = is.readLine();
+			
+			int topicIndex = board.getTopicIndexByKey(Integer.parseInt(operation));
+			
+			if (topicIndex == -1) {
+				os.println("Topico invalido!");
+				return;
+			}
+			
 			os.println("Digite a mensagem para este topico:");
 			message = is.readLine();
-			Integer topicIndex = Integer.parseInt(operation);
-			//int indexOf = topics.indexOf(topicIndex);
-			Topic aux = topics.get(topicIndex);
-			aux.insertMessage(message, topicIndex);
 			
-			notifySubscribers(topicIndex);
+			Topic topic = board.topics.get(topicIndex);
 			
-			aux.listAllMessages();
+			topic.insertMessage(message, publisherConnection);
+			os.println("Mensagem criada com sucesso!");
 			
         } catch (IOException e1) {
 			e1.printStackTrace();
 		}
 	}
-	
-	public void notifySubscribers(Integer topicIndex){
-		ArrayList<ClientSubscriberThread> subscribers;	
-		subscribers = server.subscriberList.get(topicIndex);
-		
-		if (subscribers != null){
-		
-			for (ClientSubscriberThread clientSubscriberThread : subscribers) {
-				try {
-					Socket clientSocketSubscriber = new Socket(clientSubscriberThread.subscriberSocket.getInetAddress(), 
-																	 clientSubscriberThread.subscriberSocket.getPort());
-									
-		            os = new PrintStream(clientSocketSubscriber.getOutputStream());
-		            os.println("New message number: " + topicIndex);
-		            
-		            os.close();
-		            clientSocketSubscriber.close();	            
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		} else {
-			System.out.println("No subscribers.");
-		}
-						
-	}	
 
 }
 
