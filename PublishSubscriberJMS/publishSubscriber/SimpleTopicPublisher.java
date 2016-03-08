@@ -47,6 +47,9 @@
  * Specify a number after the topic name to send that number 
  * of messages.
  */
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.IOException;
 import javax.jms.*;
 import javax.naming.*;
 
@@ -66,22 +69,26 @@ public class SimpleTopicPublisher {
         TopicSession            topicSession = null;
         Topic                   topic = null;
         TopicPublisher          topicPublisher = null;
-        TextMessage             message = null;
-        final int               NUM_MSGS;
+        MapMessage              message = null;
+        String                  publisher = "Anonymous";
+        String                  content = "";          
+        final int               NUM_MSGS = 1;
+	    final String 		    jmsuser = "jmsAdmin";
+        final String 		    oc4juserpassword = "welcome1";
+        final String 		    urlProvider = "opmn:ormi://";
+        final String 		    jmsProviderHost = "gsort.ifba.edu.br";
+        final String 		    colon = ":";
+        final String 		    opmnPort = "6007";
+        final String 		    oc4jinstance = "OC4J_JMS";
         
         if ( (args.length < 1) || (args.length > 2) ) {
-            System.out.println("Usage: java " +
-                "SimpleTopicPublisher <topic-name> " +
-                "[<number-of-messages>]");
+            System.out.println("Usage: java SimpleTopicPublisher <topic-name> <your-name>");
             System.exit(1);
         } 
         topicName = new String(args[0]);
         System.out.println("Topic name is " + topicName);
-        if (args.length == 2){
-            NUM_MSGS = (new Integer(args[1])).intValue();
-        } else {
-            NUM_MSGS = 1;
-        }
+        publisher = new String(args[1]);
+        System.out.println("publisher name is " + publisher);
         
         /* 
          * Create a JNDI API InitialContext object if none exists
@@ -89,9 +96,9 @@ public class SimpleTopicPublisher {
          */
         try {
             jndiContext = new InitialContext();
+            System.out.println("JNDI to string: " + jndiContext.toString());
         } catch (NamingException e) {
-            System.out.println("Could not create JNDI API " +
-                "context: " + e.toString());
+            System.out.println("Could not create JNDI API context: " + e.toString());
             e.printStackTrace();
             System.exit(1);
         }
@@ -101,12 +108,10 @@ public class SimpleTopicPublisher {
          * not exist, exit.
          */
         try {
-            topicConnectionFactory = (TopicConnectionFactory)
-                jndiContext.lookup("TopicConnectionFactory");
+            topicConnectionFactory = (TopicConnectionFactory)jndiContext.lookup("TopicConnectionFactory");
             topic = (Topic) jndiContext.lookup(topicName);
         } catch (NamingException e) {
-            System.out.println("JNDI API lookup failed: " +
-                e.toString());
+            System.out.println("JNDI API lookup failed: " + e.toString());
             e.printStackTrace();
             System.exit(1);
         }
@@ -120,22 +125,37 @@ public class SimpleTopicPublisher {
          * Finally, close connection.
          */
         try {
-            topicConnection = 
-                topicConnectionFactory.createTopicConnection();
-            topicSession = 
-                topicConnection.createTopicSession(false, 
-                    Session.AUTO_ACKNOWLEDGE);
+            topicConnection = topicConnectionFactory.createTopicConnection();
+            topicSession = topicConnection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
             topicPublisher = topicSession.createPublisher(topic);
-            message = topicSession.createTextMessage();
-            for (int i = 0; i < NUM_MSGS; i++) {
-                message.setText("This is message " + (i + 1));
-                System.out.println("Publishing message: " + 
-                    message.getText());
-                topicPublisher.publish(message);
-            }
+            message = topicSession.createMapMessage();
+            
+            
+            while(true) {
+                try {
+                    System.out.println("Write the message you want to publish (To end program, enter Q or q, then <return>):");
+                    InputStreamReader isr = new InputStreamReader(System.in);
+                    BufferedReader br = new BufferedReader(isr);
+                    content = br.readLine();
+                    if ((content.equals("q")) || (content.equals("Q"))) {
+                        System.out.println("Good Bye, " +  publisher);
+                        System.exit(0);
+                    }
+                    message.setStringProperty("publisher", publisher + "@" + jmsProviderHost);
+                    message.setStringProperty("subject", "New Message in topic: \"" + topicName + "\"");
+                    message.setStringProperty("content", content);
+                    System.out.println("Publishing message: " +  message.getStringProperty("publisher"));
+                    System.out.println("Publishing message: " +  message.getStringProperty("subject"));
+                    System.out.println("Publishing message: " +  message.getStringProperty("content"));
+                    topicPublisher.publish(message);
+                } catch (IOException e) {
+                    System.out.println("I/O exception: " 
+                        + e.toString());
+                }
+            } 
+            
         } catch (JMSException e) {
-            System.out.println("Exception occurred: " + 
-                e.toString());
+            System.out.println("Exception occurred: " + e.toString());
         } finally {
             if (topicConnection != null) {
                 try {

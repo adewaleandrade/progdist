@@ -51,7 +51,7 @@ import javax.jms.*;
 import javax.naming.*;
 import java.io.*;
 
-public class SimpleTopicSubscriber {
+public class Subscriber {
 
     /**
      * Main method.
