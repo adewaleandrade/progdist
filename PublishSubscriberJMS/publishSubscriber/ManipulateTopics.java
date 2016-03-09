@@ -21,7 +21,7 @@ public class ManipulateTopics {
 	   try {
 		   command = new String("j2eeadmin -addJmsDestination " + topicName + " topic");
 		   processCommand(command);
-		   System.out.println("tópico "+ topicName + " criado com sucesso!");
+		   System.out.println("topico "+ topicName + " criado com sucesso!");
 		} catch (Exception e){
          	System.out.println(getErrorMessage(e));
       	} 
@@ -31,7 +31,7 @@ public class ManipulateTopics {
 	   try {
 		   command = new String("j2eeadmin -removeJmsDestination " + topicName );
 		   processCommand(command);
-		   System.out.println("tópico "+ topicName + " removido com sucesso!");
+		   System.out.println("topico "+ topicName + " removido com sucesso!");
 		} catch (Exception e){
          	System.out.println(getErrorMessage(e));
       	} 
@@ -50,7 +50,7 @@ public class ManipulateTopics {
 		   int option = -2;	
 		   
 		   while ((line = br.readLine()) != null) {
-			   if (option >= 0 ) {
+			   if ((option >= 0 ) && (line.indexOf("jms/") < 0)) {
 				  int beginTopic = line.indexOf(":") + 2; 
 				  int endTopic = line.indexOf(",") - 1;
 				  topics.add(line.substring( beginTopic, endTopic));
@@ -67,14 +67,21 @@ public class ManipulateTopics {
    }
 
    private static void processCommand(String command) {
-	   Process p = Runtime.getRuntime().exec(checkOS(command));
-	   p.waitFor();
+	   try {
+		   Process p = Runtime.getRuntime().exec(checkOS(command));
+		   p.waitFor();
+		} catch (IOException e){
+         	System.out.println(getErrorMessage(e));
+      	} catch (InterruptedException e){
+         	System.out.println(getErrorMessage(e));
+      	}   
    }
    
    private static String[] checkOS(String command){
 	   String osName = System.getProperty("os.name" );
 	   String[] cmd = new String[3];
-	   if( osName.toLowerCase().contains( "windows" ) ) {
+	   //if( osName.toLowerCase().contains( "windows" ) ) {
+	   if( osName.toLowerCase().indexOf("windows" ) >= 0 ) {
 			cmd[0] = "cmd.exe" ;
 			cmd[1] = "/C" ;
 			cmd[2] = command;

@@ -91,7 +91,7 @@ public class Publisher {
 	public static void main(String[] args) {
 
 		if ((args.length < 1) || (args.length > 2)) {
-			System.out.println("Usage: java SimpleTopicPublisher <your-name> <topic-name>[Opcional] ");
+			System.out.println("Executar: java Publisher <Seu-nome> <topico-nome>[Opcional] ");
 			System.exit(1);
 		}
 
@@ -109,7 +109,7 @@ public class Publisher {
 			jndiContext = new InitialContext();
 			System.out.println("JNDI to string: " + jndiContext.toString());
 		} catch (NamingException e) {
-			System.out.println("Could not create JNDI API context: " + e.toString());
+			System.out.println("Nao foi possivel criar o contexto API JNDI: " + e.toString());
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -124,11 +124,11 @@ public class Publisher {
 
 			mainMenu();
 		} catch (NamingException e) {
-			System.out.println("JNDI API lookup failed: " + e.toString());
+			System.out.println("JNDI API lookup falhou: " + e.toString());
 			e.printStackTrace();
 			System.exit(1);
 		} catch (JMSException e) {
-			System.out.println("Exception occurred: " + e.toString());
+			System.out.println("Excecao ocorreu: " + e.toString());
 		} finally {
 			if (topicConnection != null) {
 				try {
@@ -142,7 +142,7 @@ public class Publisher {
 	private static void mainMenu() {
 		try {
 			while (true) {
-				System.out.println("Opcoes: (To end program, enter Q or q, then <return>)");
+				System.out.println("Opcoes: (Para encerrar o programa, digite Q ou q, e pressione <Enter>)");
 				System.out.println("1: Criar Topico");
 				System.out.println("2: Publicar mensagem");
 				isr = new InputStreamReader(System.in);
@@ -191,7 +191,7 @@ public class Publisher {
 			topicPublisher = topicSession.createPublisher(topic);
 			message = topicSession.createMapMessage();
 
-			System.out.println("Write the message you want to publish (To end program, enter Q or q, then <return>):");
+			System.out.println("Escrever a mensagem que voce deseja publicar (Para encerrar o programa, digite Q ou q, e pressione <Enter>):");
 			isr = new InputStreamReader(System.in);
 			br = new BufferedReader(isr);
 			content = br.readLine();
@@ -218,7 +218,7 @@ public class Publisher {
 	}
 
 	private static String chooseTopic() {
-		System.out.println("Available Topics: ");
+		System.out.println("Topicos Disponiveis: ");
 		ArrayList allTopics = ManipulateTopics.listTopics();
 		for (int i = 0; i < allTopics.size(); i++) {
 			System.out.println(i + ": " + allTopics.get(i));

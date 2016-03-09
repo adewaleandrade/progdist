@@ -82,12 +82,11 @@ public class Subscriber {
          * Read topic name from command line and display it.
          */
         if (args.length != 1) {
-            System.out.println("Usage: java SimpleTopicSubscriber <topic-name>");
+            System.out.println("Executar: java Subscriber <topic-name>");
             System.exit(1);
         }
         topicName = new String(args[0]);
-        System.out.println("Topic name is " + topicName);
-
+        System.out.println("Topico:" + topicName);
         /* 
          * Create a JNDI API InitialContext object if none exists
          * yet.
@@ -95,7 +94,7 @@ public class Subscriber {
         try {
             jndiContext = new InitialContext();
         } catch (NamingException e) {
-            System.out.println("Could not create JNDI API context: " + e.toString());
+            System.out.println("Nao foi possivel criar o contexto API JNDI: " + e.toString());
             e.printStackTrace();
             System.exit(1);
         }
@@ -108,7 +107,7 @@ public class Subscriber {
             topicConnectionFactory = (TopicConnectionFactory)jndiContext.lookup("TopicConnectionFactory");
             topic = (Topic) jndiContext.lookup(topicName);
         } catch (NamingException e) {
-            System.out.println("JNDI API lookup failed: " + e.toString());
+            System.out.println("JNDI API lookup falhou: " + e.toString());
             e.printStackTrace();
             System.exit(1);
         }
@@ -130,7 +129,7 @@ public class Subscriber {
             topicListener = new MapListener();
             topicSubscriber.setMessageListener(topicListener);
             topicConnection.start();
-            System.out.println("To end program, enter Q or q, " + "then <return>");
+            System.out.println("Para encerrar o programa, digite Q ou q, e pressione <Enter>");
             inputStreamReader = new InputStreamReader(System.in);
             while (!((answer == 'q') || (answer == 'Q'))) {
                 try {
