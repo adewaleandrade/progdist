@@ -47,15 +47,13 @@ public class ManipulateTopics {
 		   InputStreamReader isr = new InputStreamReader(is);
 		   BufferedReader br = new BufferedReader(isr);
 		   String line;
-		   int option = -2;	
 		   
 		   while ((line = br.readLine()) != null) {
-			   if ((option >= 0 ) && (line.indexOf("jms/") < 0)) {
+			   if ((line.indexOf("jms/") < 0) && (line.indexOf("javax.jms.Topic") > 0)) {
 				  int beginTopic = line.indexOf(":") + 2; 
 				  int endTopic = line.indexOf(",") - 1;
 				  topics.add(line.substring( beginTopic, endTopic));
 			   }
-			   option ++;
 		   }
 		} catch (Exception e){
          	System.out.println(getErrorMessage(e));
@@ -79,6 +77,7 @@ public class ManipulateTopics {
    
    private static String[] checkOS(String command){
 	   String osName = System.getProperty("os.name" );
+	   //System.out.println("os.name: " + osName );
 	   String[] cmd = new String[3];
 	   //if( osName.toLowerCase().contains( "windows" ) ) {
 	   if( osName.toLowerCase().indexOf("windows" ) >= 0 ) {
@@ -87,9 +86,9 @@ public class ManipulateTopics {
 			cmd[2] = command;
 	   }
 	   else {
-		   cmd[0] = command;
-		   cmd[1] = null;
-		   cmd[2] = null;
+		   cmd[0] = "/bin/bash";
+		   cmd[1] = "-c";
+		   cmd[2] = command;
 	   }
 	   return cmd;
    }

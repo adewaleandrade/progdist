@@ -107,7 +107,6 @@ public class Publisher {
 		 */
 		try {
 			jndiContext = new InitialContext();
-			System.out.println("JNDI to string: " + jndiContext.toString());
 		} catch (NamingException e) {
 			System.out.println("Nao foi possivel criar o contexto API JNDI: " + e.toString());
 			e.printStackTrace();
@@ -142,16 +141,13 @@ public class Publisher {
 	private static void mainMenu() {
 		try {
 			while (true) {
-				System.out.println("Opcoes: (Para encerrar o programa, digite Q ou q, e pressione <Enter>)");
+				System.out.println("Opcoes (Para encerrar o programa, digite Q ou q, e pressione <Enter>):");
 				System.out.println("1: Criar Topico");
 				System.out.println("2: Publicar mensagem");
 				isr = new InputStreamReader(System.in);
 				br = new BufferedReader(isr);
 				content = br.readLine();
-				if ((content.equals("q")) || (content.equals("Q"))) {
-					System.out.println("Good Bye, " + publisher);
-					System.exit(0);
-				}
+				checkExit(content);
 				switch (Integer.parseInt(content)) {
 				case 1:
 					createTopic();
@@ -171,11 +167,12 @@ public class Publisher {
 	}
 
 	private static void createTopic() {
-		System.out.println("Digite o nome do Topico a ser criado: ");
+		System.out.println("Digite o nome do Topico a ser criado (Para encerrar o programa, digite Q ou q, e pressione <Enter>):");
 		isr = new InputStreamReader(System.in);
 		br = new BufferedReader(isr);
 		try {
 			content = br.readLine();
+			checkExit(content);
 			ManipulateTopics.addTopic(content);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -187,6 +184,10 @@ public class Publisher {
 		try {
 
 			topicName = chooseTopic();
+			
+			if (topicName == null) {
+				return;
+			}
 			topic = (Topic) jndiContext.lookup(topicName);
 			topicPublisher = topicSession.createPublisher(topic);
 			message = topicSession.createMapMessage();
@@ -195,10 +196,8 @@ public class Publisher {
 			isr = new InputStreamReader(System.in);
 			br = new BufferedReader(isr);
 			content = br.readLine();
-			if ((content.equals("q")) || (content.equals("Q"))) {
-				System.out.println("Good Bye, " + publisher);
-				System.exit(0);
-			}
+			checkExit(content);
+			
 			message.setStringProperty("publisher", publisher + "@" + jmsProviderHost);
 			message.setStringProperty("subject", "New Message in topic: \"" + topicName + "\"");
 			message.setStringProperty("content", content);
@@ -218,8 +217,13 @@ public class Publisher {
 	}
 
 	private static String chooseTopic() {
-		System.out.println("Topicos Disponiveis: ");
+		int index = -1;
 		ArrayList allTopics = ManipulateTopics.listTopics();
+		if (allTopics.size() == 0) {
+			System.out.println("Não há tópicos disponiveis. Favor criar um novo topico antes de publicar mensagem");
+			return null;
+		}
+		System.out.println("Topicos Disponiveis (Para encerrar o programa, digite Q ou q, e pressione <Enter>): ");
 		for (int i = 0; i < allTopics.size(); i++) {
 			System.out.println(i + ": " + allTopics.get(i));
 		}
@@ -227,12 +231,21 @@ public class Publisher {
 		br = new BufferedReader(isr);
 		try {
 			content = br.readLine();
+			checkExit(content);
+			index = Integer.parseInt(content);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			System.out.println("I/O exception: " + e.toString());
+		} catch (NumberFormatException e) {
+			System.out.println("Opcao invalida.");
+			return null;
 		}
-		int index = Integer.parseInt(content);
-		return (String) allTopics.get(index);
+		if ((index >= 0) && (index < allTopics.size())) {
+			return (String) allTopics.get(index);
+		} else {
+			System.out.println("Opcao invalida.");
+			return null;
+		}
 	}
 
 	private static void closeReaders() {
@@ -244,5 +257,11 @@ public class Publisher {
 			System.out.println("I/O exception: " + e.toString());
 		}
 
+	}
+	private static void checkExit(String content) {
+		if ((content.equals("q")) || (content.equals("Q"))) {
+			System.out.println("Good Bye, " + publisher);
+			System.exit(0);
+		}
 	}
 }
