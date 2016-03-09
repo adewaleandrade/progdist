@@ -20,8 +20,7 @@ public class ManipulateTopics {
    public static void addTopic(String topicName) {
 	   try {
 		   command = new String("j2eeadmin -addJmsDestination " + topicName + " topic");
-		   Process p = Runtime.getRuntime().exec(command);
-		   p.waitFor();
+		   processCommand(command);
 		   System.out.println("tópico "+ topicName + " criado com sucesso!");
 		} catch (Exception e){
          	System.out.println(getErrorMessage(e));
@@ -31,8 +30,7 @@ public class ManipulateTopics {
    public static void removeTopic(String topicName) {
 	   try {
 		   command = new String("j2eeadmin -removeJmsDestination " + topicName );
-		   Process p = Runtime.getRuntime().exec(command);
-		   p.waitFor();
+		   processCommand(command);
 		   System.out.println("tópico "+ topicName + " removido com sucesso!");
 		} catch (Exception e){
          	System.out.println(getErrorMessage(e));
@@ -43,10 +41,9 @@ public class ManipulateTopics {
 	   try {
 		   
 		   command = new String("j2eeadmin -listJmsDestination");
-		   Runtime runtime = Runtime.getRuntime();
-		   Process process = runtime.exec(command);
+		   Process p = Runtime.getRuntime().exec(checkOS(command));
 
-		   InputStream is = process.getInputStream();
+		   InputStream is = p.getInputStream();
 		   InputStreamReader isr = new InputStreamReader(is);
 		   BufferedReader br = new BufferedReader(isr);
 		   String line;
@@ -68,4 +65,45 @@ public class ManipulateTopics {
    private static String getErrorMessage(Exception e){
       return ERROR.concat(e.getMessage());
    }
+
+   private static void processCommand(String command) {
+	   Process p = Runtime.getRuntime().exec(checkOS(command));
+	   p.waitFor();
+   }
+   
+   private static String[] checkOS(String command){
+	   String osName = System.getProperty("os.name" );
+	   String[] cmd = new String[3];
+	   if( osName.toLowerCase().contains( "windows" ) ) {
+			cmd[0] = "cmd.exe" ;
+			cmd[1] = "/C" ;
+			cmd[2] = command;
+	   }
+	   else {
+		   cmd[0] = command;
+		   cmd[1] = null;
+		   cmd[2] = null;
+	   }
+	   return cmd;
+   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
