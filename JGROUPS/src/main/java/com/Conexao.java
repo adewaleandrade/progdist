@@ -12,7 +12,8 @@ public class Conexao {
 	private static final String DB_CONNECTION = "jdbc:postgresql://localhost:5432/"+DB_NAME;
 	private static final String DB_USER = "postgres";
 	private static final String DB_PASSWORD = "123465";
-	private static final String DB_HOST = "cachoeira.inema.intranet"; 
+	//private static final String DB_HOST = "cachoeira.inema.intranet"; 
+	private static final String DB_HOST = "localhost";
 	
 	public Connection conn = null;
 
@@ -40,8 +41,9 @@ public class Conexao {
 	    try
 	    {
 	      Class.forName("org.postgresql.Driver");
-	      String url = "jdbc:postgresql://"+DB_HOST+"/"+DB_NAME;
-	      conn = DriverManager.getConnection(url, DB_USER, DB_PASSWORD);
+	      //String url = "jdbc:postgresql://"+DB_HOST+"/"+DB_NAME;
+	      //conn = DriverManager.getConnection(url, DB_USER, DB_PASSWORD);
+	      conn = DriverManager.getConnection(DB_CONNECTION, DB_USER, DB_PASSWORD);
 	    }
 	    catch (ClassNotFoundException e)
 	    {
