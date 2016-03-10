@@ -1,4 +1,4 @@
-package com.jgroups.rest;
+package com;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -12,16 +12,17 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 import org.jgroups.util.Util;
 
-public class SimpleCluster extends ReceiverAdapter {
+public class Cluster {
 	
 	
-    public JChannel channel;
+    //public JChannel channel;
     String user_name = System.getProperty("user.name", "n/a");
     final List<String> state = new LinkedList<String>();
     
@@ -33,7 +34,7 @@ public class SimpleCluster extends ReceiverAdapter {
 	private static final String DB_USER = "postgres";
 	private static final String DB_PASSWORD = "123465";    
     
-    public SimpleCluster(){
+    public Cluster(){
     	
     }
     
@@ -41,7 +42,7 @@ public class SimpleCluster extends ReceiverAdapter {
         System.out.println("** view: " + new_view);
     }
 
-    public void receive(Message msg) {
+    public void receive(Message msg, JChannel channel) {
     	
     	String line="";
     	try{
@@ -53,7 +54,7 @@ public class SimpleCluster extends ReceiverAdapter {
                 state.add(line);
             }            
     	}catch(Exception e){
-    		this.channel.disconnect();
+    		channel.disconnect();
     		e.printStackTrace();    		
     	}        
     }
@@ -75,60 +76,23 @@ public class SimpleCluster extends ReceiverAdapter {
             System.out.println(str);
         }
     }
-
-    /*
-    private void start() throws Exception {
-        channel = new JChannel();
-        channel.setReceiver(this);
-        channel.connect("DBCluster");    
-
-        channel.getState(null, 10000);
-        eventLoop();
-        
-        channel.close();
-    }
-*/
-    public void start() throws Exception {
-        channel = new JChannel();
-        channel.setReceiver(this);
-        channel.connect("DBCluster");    
-
-        channel.getState(null, 10000);
-        //eventLoop();
-        
-        //channel.close();
-    }
     
-    public void closeChannel(){
+    public void closeChannel(JChannel channel){
     	channel.close();
     }
-    public void sendMessage(String message) throws Exception{
-        Message msg = new Message(null, null, message);
-        channel.send(msg); 
+    
+    public void sendMessage(String message, JChannel channel){        
+        try {
+        	List<Address> members=channel.getView().getMembers();
+        	Address target=members.get(0);
+        	Message msg = new Message(target, null, message);
+			channel.send(msg);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
     }    
-  /*  
-    private void eventLoop() {
-        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        while(true) {
-            try {
-                System.out.print("> "); System.out.flush();
-                String line = in.readLine().toLowerCase();
-                String origLine = line;
-                if(line.startsWith("quit") || line.startsWith("exit")) {
-                    break;
-                }
-                line="[" + user_name + "] " + line;
-                Message msg = new Message(null, null, line);
-                channel.send(msg);                
-            }
-            catch(Exception e) {
-            }
-        }
-    }
-*/
-    public static void main(String[] args) throws Exception {
-        //new SimpleCluster().start();
-    }
+
     
     public void executeTransactionQuery(String query) throws SQLException{
     	
