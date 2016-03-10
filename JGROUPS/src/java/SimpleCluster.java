@@ -1,5 +1,4 @@
-package com;
-
+package com.jgroups.rest;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -19,25 +18,25 @@ import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 import org.jgroups.util.Util;
 
-public class Cluster extends ReceiverAdapter {
+public class SimpleCluster extends ReceiverAdapter {
 	
 	
-    JChannel channel;
+    public JChannel channel;
     String user_name = System.getProperty("user.name", "n/a");
     final List<String> state = new LinkedList<String>();
-    public Message message;
     
-    private static Cluster cluster = new Cluster();
-
-    public Cluster(){
-	
-    }    
     
-    public static Cluster getInstance() throws Exception{
-    	cluster.start();
-    	return cluster;
+    private static final String DB_NAME = "[DATABASE-NAME]";
+        
+	private static final String DB_DRIVER = "org.postgresql.Driver";
+	private static final String DB_CONNECTION = "jdbc:postgresql://localhost:5432/"+DB_NAME;
+	private static final String DB_USER = "postgres";
+	private static final String DB_PASSWORD = "123465";    
+    
+    public SimpleCluster(){
+    	
     }
-            
+    
     public void viewAccepted(View new_view) {
         System.out.println("** view: " + new_view);
     }
@@ -77,7 +76,8 @@ public class Cluster extends ReceiverAdapter {
         }
     }
 
-    public void start() throws Exception {
+    /*
+    private void start() throws Exception {
         channel = new JChannel();
         channel.setReceiver(this);
         channel.connect("DBCluster");    
@@ -87,31 +87,49 @@ public class Cluster extends ReceiverAdapter {
         
         channel.close();
     }
+*/
+    public void start() throws Exception {
+        channel = new JChannel();
+        channel.setReceiver(this);
+        channel.connect("DBCluster");    
 
+        channel.getState(null, 10000);
+        //eventLoop();
+        
+        //channel.close();
+    }
+    
+    public void closeChannel(){
+    	channel.close();
+    }
+    public void sendMessage(String message) throws Exception{
+        Message msg = new Message(null, null, message);
+        channel.send(msg); 
+    }    
+  /*  
     private void eventLoop() {
-        //BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         while(true) {
             try {
-                /*System.out.print("> "); System.out.flush();
+                System.out.print("> "); System.out.flush();
                 String line = in.readLine().toLowerCase();
-                
+                String origLine = line;
                 if(line.startsWith("quit") || line.startsWith("exit")) {
                     break;
                 }
-                line="[" + user_name + "] " + line;*/
-                //Message msg = new Message(null, null, line);
-                channel.send(message);                
+                line="[" + user_name + "] " + line;
+                Message msg = new Message(null, null, line);
+                channel.send(msg);                
             }
             catch(Exception e) {
             }
         }
     }
-/*
+*/
     public static void main(String[] args) throws Exception {
-        new Cluster().start();
+        //new SimpleCluster().start();
     }
-    */
-    /*
+    
     public void executeTransactionQuery(String query) throws SQLException{
     	
 		Connection dbConnection = null;
@@ -177,5 +195,5 @@ public class Cluster extends ReceiverAdapter {
 			System.out.println(e.getMessage());
 		}
 		return dbConnection;
-	}	*/
+	}	
 }

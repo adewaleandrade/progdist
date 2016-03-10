@@ -20,7 +20,7 @@ import org.jgroups.util.Util;
 public class SimpleCluster extends ReceiverAdapter {
 	
 	
-    JChannel channel;
+    public JChannel channel;
     String user_name = System.getProperty("user.name", "n/a");
     final List<String> state = new LinkedList<String>();
     
@@ -44,7 +44,7 @@ public class SimpleCluster extends ReceiverAdapter {
     	
     	String line="";
     	try{
-    		executeTransactionQuery(msg.getObject().toString());
+    		//executeTransactionQuery(msg.getObject().toString());
             line = msg.getSrc() + ": " + msg.getObject();
             System.out.println(line);
             
@@ -75,6 +75,7 @@ public class SimpleCluster extends ReceiverAdapter {
         }
     }
 
+    /*
     private void start() throws Exception {
         channel = new JChannel();
         channel.setReceiver(this);
@@ -85,7 +86,26 @@ public class SimpleCluster extends ReceiverAdapter {
         
         channel.close();
     }
+*/
+    public void start() throws Exception {
+        channel = new JChannel();
+        channel.setReceiver(this);
+        channel.connect("DBCluster");    
 
+        channel.getState(null, 10000);
+        //eventLoop();
+        
+        //channel.close();
+    }
+    
+    public void closeChannel(){
+    	channel.close();
+    }
+    public void sendMessage(String message) throws Exception{
+        Message msg = new Message(null, null, message);
+        channel.send(msg); 
+    }    
+  /*  
     private void eventLoop() {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         while(true) {
@@ -104,9 +124,9 @@ public class SimpleCluster extends ReceiverAdapter {
             }
         }
     }
-
+*/
     public static void main(String[] args) throws Exception {
-        new SimpleCluster().start();
+        //new SimpleCluster().start();
     }
     
     public void executeTransactionQuery(String query) throws SQLException{
