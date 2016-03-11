@@ -11,9 +11,10 @@ public class Conexao {
 	private static final String DB_DRIVER = "org.postgresql.Driver";	
 	private static final String DB_USER = "postgres";
 	private static final String DB_PASSWORD = "123456";
-	private static final String DB_HOST = "cachoeira.inema.intranet";
+	private static final String DB_HOST = "localhost";
+	//private static final String DB_HOST = "cachoeira.inema.intranet";
 	private static final String DB_CONNECTION = "jdbc:postgresql://"+DB_HOST+":5432/"+DB_NAME;
-	//private static final String DB_HOST = "localhost";
+	
 	
 	public Connection conn = null;
 

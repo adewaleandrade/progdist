@@ -134,9 +134,9 @@ public class Service extends ReceiverAdapter{
     	ResultSet resultado = null;
     	
     	try {
-        	List<Address> members = channel.getView().getMembers();
-        	Address target = members.get(0);
-        	Message msg = new Message(target, null, message);
+        	//List<Address> members = channel.getView().getMembers();
+        	//Address target = members.get(0);
+        	Message msg = new Message(null, null, message);
 			channel.send(msg);				
 			resultado =  conn.query(message);
 		} catch (Exception e) {
@@ -151,9 +151,9 @@ public class Service extends ReceiverAdapter{
     	boolean resultado = false;
     	
     	try {
-        	List<Address> members = channel.getView().getMembers();
-        	Address target = members.get(0);
-        	Message msg = new Message(target, null, message);
+        	//List<Address> members = channel.getView().getMembers();
+        	//Address target = members.get(0);
+        	Message msg = new Message(null, null, message);
 			channel.send(msg);				
 			resultado =  conn.update(message);
 		} catch (Exception e) {
