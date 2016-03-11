@@ -38,9 +38,25 @@ public class Service extends ReceiverAdapter{
 		conn.connect();
 		
 		start();
-		ResultSet result = sendMessage(query); 	
-		return showResult(result);		
+		ResultSet result = sendMessage(query);
+		result.last();
+		int total = result.getRow();
+		result.beforeFirst();
+		if(total > 0)
+			return showResult(result);
+		else
+			return new ArrayList<Map<String, Object>>();
+				
 	}
+	
+	@RequestMapping(value = "/executeUpd", method = RequestMethod.GET)
+	public boolean executeUpd(String query) throws Exception {
+		conn = new Conexao();
+		conn.connect();
+		
+		start();		 
+		return sendMessage(query, true);		
+	}	
 
 	public List<Map<String, Object>> showResult(ResultSet rs) throws SQLException{
 		
@@ -129,7 +145,24 @@ public class Service extends ReceiverAdapter{
 		} 
         //executando a query e retornando resultado
         return resultado;
-    }        
+    }       
+    
+    public boolean sendMessage(String message, boolean update){                
+    	boolean resultado = false;
+    	
+    	try {
+        	List<Address> members = channel.getView().getMembers();
+        	Address target = members.get(0);
+        	Message msg = new Message(target, null, message);
+			channel.send(msg);				
+			resultado =  conn.update(message);
+		} catch (Exception e) {
+			channel.disconnect();
+			e.printStackTrace();		
+		} 
+        //executando a query e retornando resultado
+        return resultado;
+    }     
     
 }
 
