@@ -7,7 +7,7 @@ Progdist
 | --------------------------------------------- |:----------------------------------------------------------------:|
 | Produtor/Consumidor(Semaforos)                |  OK                                                              |
 | DLL                                           |  Em desenvolvimento (nao encontrei aqui no github o que fizemos) |
-| Publish/Subscriber (Socket)                   |  Em desenvolvimento                                              |
-| Publish/Subscriber (RMI)                      |  OK                                                               |
-| Publish/Subscriber (JMS)                      |  -                                                               |
-| Atividade Final (BD replicado/Jgroups)        |  -                                                               |
+| Publish/Subscriber (Socket)                   |  OK                                                              |
+| Publish/Subscriber (RMI)                      |  OK                                                              |
+| Publish/Subscriber (JMS)                      |  OK                                                              |
+| Atividade Final (BD replicado/Jgroups)        |  Em desenvolvimento                                              |
