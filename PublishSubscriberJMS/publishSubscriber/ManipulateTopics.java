@@ -20,9 +20,8 @@ public class ManipulateTopics {
    public static void addTopic(String topicName) {
 	   try {
 		   command = new String("j2eeadmin -addJmsDestination " + topicName + " topic");
-		   Process p = Runtime.getRuntime().exec(command);
-		   p.waitFor();
-		   System.out.println("tópico "+ topicName + " criado com sucesso!");
+		   processCommand(command);
+		   System.out.println("topico "+ topicName + " criado com sucesso!");
 		} catch (Exception e){
          	System.out.println(getErrorMessage(e));
       	} 
@@ -31,9 +30,8 @@ public class ManipulateTopics {
    public static void removeTopic(String topicName) {
 	   try {
 		   command = new String("j2eeadmin -removeJmsDestination " + topicName );
-		   Process p = Runtime.getRuntime().exec(command);
-		   p.waitFor();
-		   System.out.println("tópico "+ topicName + " removido com sucesso!");
+		   processCommand(command);
+		   System.out.println("topico "+ topicName + " removido com sucesso!");
 		} catch (Exception e){
          	System.out.println(getErrorMessage(e));
       	} 
@@ -43,22 +41,19 @@ public class ManipulateTopics {
 	   try {
 		   
 		   command = new String("j2eeadmin -listJmsDestination");
-		   Runtime runtime = Runtime.getRuntime();
-		   Process process = runtime.exec(command);
+		   Process p = Runtime.getRuntime().exec(checkOS(command));
 
-		   InputStream is = process.getInputStream();
+		   InputStream is = p.getInputStream();
 		   InputStreamReader isr = new InputStreamReader(is);
 		   BufferedReader br = new BufferedReader(isr);
 		   String line;
-		   int option = -2;	
 		   
 		   while ((line = br.readLine()) != null) {
-			   if (option >= 0 ) {
+			   if ((line.indexOf("jms/") < 0) && (line.indexOf("javax.jms.Topic") > 0)) {
 				  int beginTopic = line.indexOf(":") + 2; 
 				  int endTopic = line.indexOf(",") - 1;
 				  topics.add(line.substring( beginTopic, endTopic));
 			   }
-			   option ++;
 		   }
 		} catch (Exception e){
          	System.out.println(getErrorMessage(e));
@@ -68,4 +63,53 @@ public class ManipulateTopics {
    private static String getErrorMessage(Exception e){
       return ERROR.concat(e.getMessage());
    }
+
+   private static void processCommand(String command) {
+	   try {
+		   Process p = Runtime.getRuntime().exec(checkOS(command));
+		   p.waitFor();
+		} catch (IOException e){
+         	System.out.println(getErrorMessage(e));
+      	} catch (InterruptedException e){
+         	System.out.println(getErrorMessage(e));
+      	}   
+   }
+   
+   private static String[] checkOS(String command){
+	   String osName = System.getProperty("os.name" );
+	   //System.out.println("os.name: " + osName );
+	   String[] cmd = new String[3];
+	   //if( osName.toLowerCase().contains( "windows" ) ) {
+	   if( osName.toLowerCase().indexOf("windows" ) >= 0 ) {
+			cmd[0] = "cmd.exe" ;
+			cmd[1] = "/C" ;
+			cmd[2] = command;
+	   }
+	   else {
+		   cmd[0] = "/bin/bash";
+		   cmd[1] = "-c";
+		   cmd[2] = command;
+	   }
+	   return cmd;
+   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

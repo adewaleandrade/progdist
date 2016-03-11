@@ -47,107 +47,102 @@
  * Specify a topic name on the command line when you run the 
  * program. To end the program, enter Q or q on the command line.
  */
+
 import javax.jms.*;
 import javax.naming.*;
 import java.io.*;
 
 public class Subscriber {
 
-    /**
-     * Main method.
-     *
-     * @param args     the topic used by the example
-     */
-    public static void main(String[] args) {
-        String                  topicName = null;
-        Context                 jndiContext = null;
-        TopicConnectionFactory  topicConnectionFactory = null;
-        TopicConnection         topicConnection = null;
-        TopicSession            topicSession = null;
-        Topic                   topic = null;
-        TopicSubscriber         topicSubscriber = null;
-        MapListener             topicListener = null;
-        MapMessage              message = null;
-        InputStreamReader       inputStreamReader = null;
-        char                    answer = '\0';
-	final String 		jmsuser = "jmsAdmin";
-        final String 		oc4juserpassword = "welcome1";
-        final String 		urlProvider = "opmn:ormi://";
-        final String 		jmsProviderHost = "gsort.ifba.edu.br";
-        final String 		colon = ":";
-        final String 		opmnPort = "6007";
-        final String 		oc4jinstance = "OC4J_JMS";
-                
-        /*
-         * Read topic name from command line and display it.
-         */
-        if (args.length != 1) {
-            System.out.println("Usage: java SimpleTopicSubscriber <topic-name>");
-            System.exit(1);
-        }
-        topicName = new String(args[0]);
-        System.out.println("Topic name is " + topicName);
+	/**
+	 * Main method.
+	 *
+	 * @param args
+	 *            the topic used by the example
+	 */
+	public static void main(String[] args) {
+		String topicName = null;
+		Context jndiContext = null;
+		TopicConnectionFactory topicConnectionFactory = null;
+		TopicConnection topicConnection = null;
+		TopicSession topicSession = null;
+		Topic topic = null;
+		TopicSubscriber topicSubscriber = null;
+		MapListener topicListener = null;
+		MapMessage message = null;
+		InputStreamReader inputStreamReader = null;
+		char answer = '\0';
+		final String jmsuser = "jmsAdmin";
+		final String oc4juserpassword = "welcome1";
+		final String urlProvider = "opmn:ormi://";
+		final String jmsProviderHost = "gsort.ifba.edu.br";
+		final String colon = ":";
+		final String opmnPort = "6007";
+		final String oc4jinstance = "OC4J_JMS";
 
-        /* 
-         * Create a JNDI API InitialContext object if none exists
-         * yet.
-         */
-        try {
-            jndiContext = new InitialContext();
-        } catch (NamingException e) {
-            System.out.println("Could not create JNDI API context: " + e.toString());
-            e.printStackTrace();
-            System.exit(1);
-        }
+		/*
+		 * Read topic name from command line and display it.
+		 */
+		if (args.length != 1) {
+			System.out.println("Executar: java Subscriber <topic-name>");
+			System.exit(1);
+		}
+		topicName = new String(args[0]);
+		System.out.println("Topico:" + topicName);
+		/*
+		 * Create a JNDI API InitialContext object if none exists yet.
+		 */
+		try {
+			jndiContext = new InitialContext();
+		} catch (NamingException e) {
+			System.out.println("Nao foi possivel criar o contexto API JNDI: " + e.toString());
+			e.printStackTrace();
+			System.exit(1);
+		}
 
-        /* 
-         * Look up connection factory and topic.  If either does
-         * not exist, exit.
-         */
-        try {
-            topicConnectionFactory = (TopicConnectionFactory)jndiContext.lookup("TopicConnectionFactory");
-            topic = (Topic) jndiContext.lookup(topicName);
-        } catch (NamingException e) {
-            System.out.println("JNDI API lookup failed: " + e.toString());
-            e.printStackTrace();
-            System.exit(1);
-        }
+		/*
+		 * Look up connection factory and topic. If either does not exist, exit.
+		 */
+		try {
+			topicConnectionFactory = (TopicConnectionFactory) jndiContext.lookup("TopicConnectionFactory");
+			topic = (Topic) jndiContext.lookup(topicName);
+		} catch (NamingException e) {
+			System.out.println("JNDI API lookup falhou: " + e.toString());
+			e.printStackTrace();
+			System.exit(1);
+		}
 
-        /*
-         * Create connection.
-         * Create session from connection; false means session is
-         * not transacted.
-         * Create subscriber.
-         * Register message listener (TextListener).
-         * Receive text messages from topic.
-         * When all messages have been received, enter Q to quit.
-         * Close connection.
-         */
-        try {
-            topicConnection = topicConnectionFactory.createTopicConnection();
-            topicSession = topicConnection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-            topicSubscriber = topicSession.createSubscriber(topic);
-            topicListener = new MapListener();
-            topicSubscriber.setMessageListener(topicListener);
-            topicConnection.start();
-            System.out.println("To end program, enter Q or q, " + "then <return>");
-            inputStreamReader = new InputStreamReader(System.in);
-            while (!((answer == 'q') || (answer == 'Q'))) {
-                try {
-                    answer = (char) inputStreamReader.read();
-                } catch (IOException e) {
-                    System.out.println("I/O exception: " 
-                        + e.toString());
-                }
-            }
-        } catch (JMSException e) {
-            System.out.println("Exception occurred: " + e.toString());
-        } finally {
-            if (topicConnection != null) {
-                try {
-                    topicConnection.close();
-                } catch (JMSException e) {}
-            }
-        }
-    }
+		/*
+		 * Create connection. Create session from connection; false means
+		 * session is not transacted. Create subscriber. Register message
+		 * listener (TextListener). Receive text messages from topic. When all
+		 * messages have been received, enter Q to quit. Close connection.
+		 */
+		try {
+			topicConnection = topicConnectionFactory.createTopicConnection();
+			topicSession = topicConnection.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+			topicSubscriber = topicSession.createSubscriber(topic);
+			topicListener = new MapListener();
+			topicSubscriber.setMessageListener(topicListener);
+			topicConnection.start();
+			System.out.println("Para encerrar o programa, digite Q ou q, e pressione <Enter>");
+			inputStreamReader = new InputStreamReader(System.in);
+			while (!((answer == 'q') || (answer == 'Q'))) {
+				try {
+					answer = (char) inputStreamReader.read();
+				} catch (IOException e) {
+					System.out.println("I/O exception: " + e.toString());
+				}
+			}
+		} catch (JMSException e) {
+			System.out.println("Exception occurred: " + e.toString());
+		} finally {
+			if (topicConnection != null) {
+				try {
+					topicConnection.close();
+				} catch (JMSException e) {
+				}
+			}
+		}
+	}
 }

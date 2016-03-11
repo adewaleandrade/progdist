@@ -1,4 +1,3 @@
-package com.ps;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,7 +8,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.ps.Topic;
 
 public class MultiThreadPublisherSubscriberServer{
 
